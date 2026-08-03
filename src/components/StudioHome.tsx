@@ -3,8 +3,6 @@
 import Link from "next/link";
 import {
   HOME_PANELS,
-  centroidX,
-  centroidY,
   type HomeHotspot,
   type HomePanel,
 } from "@/lib/home-hotspots";
@@ -17,15 +15,6 @@ function ContourHotspot({ spot }: { spot: HomeHotspot }) {
       aria-label={spot.label}
     >
       <polygon points={spot.points} className="home-hotspot-shape" />
-      <text
-        className="home-hotspot-label"
-        x={centroidX(spot.points)}
-        y={centroidY(spot.points)}
-        textAnchor="middle"
-        dominantBaseline="middle"
-      >
-        {spot.label}
-      </text>
     </Link>
   );
 }

@@ -103,21 +103,3 @@ button {
 .home-panel-right .home-hotspot:focus-visible .home-hotspot-shape {
   filter: url(#glow-right);
 }
-
-.home-hotspot-label {
-  fill: rgb(44 42 38 / 0);
-  font-size: 3.2px;
-  font-family: var(--font-eb-garamond), "Times New Roman", Times, serif;
-  letter-spacing: 0.04em;
-  pointer-events: none;
-  transition: fill 280ms ease, stroke 280ms ease;
-  paint-order: stroke;
-  stroke: rgb(243 240 232 / 0);
-  stroke-width: 0.55px;
-}
-
-.home-hotspot:hover .home-hotspot-label,
-.home-hotspot:focus-visible .home-hotspot-label {
-  fill: rgb(44 42 38 / 0.88);
-  stroke: rgb(243 240 232 / 0.85);
-}
