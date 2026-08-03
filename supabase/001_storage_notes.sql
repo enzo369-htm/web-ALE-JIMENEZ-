@@ -1,0 +1,28 @@
+-- Storage setup (run in Supabase Dashboard → Storage)
+--
+-- 1. Create a public bucket, e.g. `uploads`
+-- 2. Policies (example):
+--
+-- SELECT: public (or authenticated-only if you prefer signed URLs)
+-- INSERT / UPDATE / DELETE: authenticated
+--
+-- SQL-style policies (adjust bucket id):
+--
+-- create policy "Public read uploads"
+-- on storage.objects for select
+-- using (bucket_id = 'uploads');
+--
+-- create policy "Auth write uploads"
+-- on storage.objects for insert
+-- to authenticated
+-- with check (bucket_id = 'uploads');
+--
+-- create policy "Auth update uploads"
+-- on storage.objects for update
+-- to authenticated
+-- using (bucket_id = 'uploads');
+--
+-- create policy "Auth delete uploads"
+-- on storage.objects for delete
+-- to authenticated
+-- using (bucket_id = 'uploads');
