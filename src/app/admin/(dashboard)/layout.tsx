@@ -2,6 +2,7 @@ import { AdminLayout } from "@/core/admin-shell";
 
 const links = [
   { href: "/admin", label: "Home" },
+  { href: "/admin/home-hotspots", label: "Hero map" },
   { href: "/admin/projects", label: "Projects" },
   { href: "/admin/paintings", label: "Paintings" },
   { href: "/admin/texts", label: "Texts" },

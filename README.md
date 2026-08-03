@@ -57,6 +57,7 @@ Design B reuses the same editor pattern for **handwritten note scans** around a 
 |-------|---------|
 | `/admin/login` | Sign in |
 | `/admin` | Overview |
+| `/admin/home-hotspots` | Trace hero object contours (mouse) |
 | `/admin/projects` | Project list / create |
 | `/admin/projects/[id]` | Details, works, canvas (A) or notes (B) |
 | `/admin/paintings` | Selected paintings |
@@ -78,6 +79,7 @@ Home hotspot positions (not in admin yet): [`src/lib/home-hotspots.ts`](src/lib/
    - `supabase/005_works.sql`
    - `supabase/006_project_notes.sql`
    - `supabase/007_paintings_texts_sounds.sql`
+   - `supabase/008_home_hotspots.sql`
 3. Storage → create bucket **`uploads`** (public read; write for `authenticated`). Apply policies from `001`.
 4. Authentication → Users → create admin user (email + password).
 5. Settings → API → copy **Project URL** and **anon key** into `.env.local`.

@@ -34,7 +34,7 @@ export function LoginForm({
     setLoading(false);
 
     if (authError) {
-      setError("Invalid credentials");
+      setError(authError.message || "Invalid credentials");
       return;
     }
 

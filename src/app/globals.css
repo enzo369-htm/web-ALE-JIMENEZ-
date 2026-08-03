@@ -69,3 +69,55 @@ button {
 .prose-site strong {
   font-weight: 600;
 }
+
+/* Dual-hero contour hotspots — subtle edge glow, no box chrome */
+.home-hotspot {
+  cursor: pointer;
+  outline: none;
+}
+
+.home-hotspot-shape {
+  fill: transparent;
+  stroke: transparent;
+  stroke-width: 0.35;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  transition:
+    stroke 280ms ease,
+    fill 280ms ease,
+    filter 280ms ease;
+}
+
+.home-hotspot:hover .home-hotspot-shape,
+.home-hotspot:focus-visible .home-hotspot-shape {
+  fill: rgb(255 252 245 / 0.04);
+  stroke: rgb(255 252 245 / 0.72);
+}
+
+.home-panel-left .home-hotspot:hover .home-hotspot-shape,
+.home-panel-left .home-hotspot:focus-visible .home-hotspot-shape {
+  filter: url(#glow-left);
+}
+
+.home-panel-right .home-hotspot:hover .home-hotspot-shape,
+.home-panel-right .home-hotspot:focus-visible .home-hotspot-shape {
+  filter: url(#glow-right);
+}
+
+.home-hotspot-label {
+  fill: rgb(44 42 38 / 0);
+  font-size: 3.2px;
+  font-family: var(--font-eb-garamond), "Times New Roman", Times, serif;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+  transition: fill 280ms ease, stroke 280ms ease;
+  paint-order: stroke;
+  stroke: rgb(243 240 232 / 0);
+  stroke-width: 0.55px;
+}
+
+.home-hotspot:hover .home-hotspot-label,
+.home-hotspot:focus-visible .home-hotspot-label {
+  fill: rgb(44 42 38 / 0.88);
+  stroke: rgb(243 240 232 / 0.85);
+}

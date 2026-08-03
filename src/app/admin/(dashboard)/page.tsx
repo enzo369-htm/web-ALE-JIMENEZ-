@@ -2,6 +2,11 @@ import Link from "next/link";
 
 const LINKS = [
   {
+    href: "/admin/home-hotspots",
+    label: "Hero map",
+    blurb: "Trace object contours on the studio photos for the interactive home",
+  },
+  {
     href: "/admin/projects",
     label: "Projects",
     blurb: "CRUD projects, works, Design A canvas, Design B notes",
