@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #f3f0e8;
+  --bg-elevated: #faf8f3;
+  --ink: #2c2a26;
+  --muted: #7a756c;
+  --accent: #b8a46a;
+  --line: #ddd6c8;
+  --background: var(--bg);
+  --foreground: var(--ink);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-bg: var(--bg);
+  --color-bg-elevated: var(--bg-elevated);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-line: var(--line);
+  --font-serif: var(--font-eb-garamond);
+  --font-mono: var(--font-ibm-plex-mono);
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+body {
+  font-family: var(--font-eb-garamond), "Times New Roman", Times, serif;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
+.font-mono-ui {
+  font-family: var(--font-ibm-plex-mono), ui-monospace, monospace;
+  letter-spacing: 0;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+a {
+  color: inherit;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+button {
+  font: inherit;
+}
+
+.site-container {
+  width: min(1120px, calc(100% - 3rem));
+  margin-inline: auto;
+}
+
+.prose-site {
+  font-size: 1.05rem;
+  line-height: 1.75;
+  color: var(--ink);
+}
+
+.prose-site strong {
+  font-weight: 600;
+}
