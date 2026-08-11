@@ -11,6 +11,15 @@ export function hasPosition(item: CanvasItemInput): boolean {
 /** Staggered defaults so new items are never stacked on top of each other. */
 export function withDefaultPositions(items: CanvasItemInput[]): CanvasItem[] {
   return items.map((item, i) => {
+    const workId =
+      item.workId ??
+      (typeof item.meta?.workId === "string" ? item.meta.workId : null) ??
+      null;
+    const meta = {
+      ...item.meta,
+      ...(workId ? { workId } : {}),
+    };
+
     if (hasPosition(item)) {
       return {
         id: item.id,
@@ -19,7 +28,8 @@ export function withDefaultPositions(items: CanvasItemInput[]): CanvasItem[] {
         y: item.y as number,
         width: item.width as number,
         label: item.label,
-        meta: item.meta,
+        workId,
+        meta,
       };
     }
 
@@ -36,7 +46,8 @@ export function withDefaultPositions(items: CanvasItemInput[]): CanvasItem[] {
       y,
       width,
       label: item.label,
-      meta: item.meta,
+      workId,
+      meta,
     };
   });
 }

@@ -26,6 +26,7 @@ export default function WorkLightbox({
 
   const images = work?.images ?? [];
   const total = images.length;
+  const showNav = total > 1;
 
   const go = useCallback(
     (dir: -1 | 1) => {
@@ -72,7 +73,18 @@ export default function WorkLightbox({
         </button>
       </div>
 
-      <div className="relative flex flex-1 items-center justify-center px-6 pb-16 md:px-16">
+      <div className="relative flex flex-1 items-center justify-center px-14 pb-16 md:px-24">
+        {showNav && (
+          <button
+            type="button"
+            onClick={() => go(-1)}
+            className="absolute left-3 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center border border-ink/20 bg-bg/90 text-lg text-ink hover:bg-ink hover:text-bg md:left-6"
+            aria-label="Previous image"
+          >
+            ←
+          </button>
+        )}
+
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={images[index]}
@@ -80,28 +92,21 @@ export default function WorkLightbox({
           className="max-h-[78vh] max-w-full object-contain"
         />
 
-        {total > 1 && (
-          <>
-            <button
-              type="button"
-              onClick={() => go(-1)}
-              className="absolute left-4 top-1/2 -translate-y-1/2 font-mono-ui text-xs uppercase tracking-wide text-muted hover:text-ink md:left-8"
-              aria-label="Previous image"
-            >
-              ←
-            </button>
-            <button
-              type="button"
-              onClick={() => go(1)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 font-mono-ui text-xs uppercase tracking-wide text-muted hover:text-ink md:right-8"
-              aria-label="Next image"
-            >
-              →
-            </button>
-            <p className="absolute bottom-6 left-1/2 -translate-x-1/2 font-mono-ui text-[11px] text-muted">
-              {index + 1} / {total}
-            </p>
-          </>
+        {showNav && (
+          <button
+            type="button"
+            onClick={() => go(1)}
+            className="absolute right-3 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center border border-ink/20 bg-bg/90 text-lg text-ink hover:bg-ink hover:text-bg md:right-6"
+            aria-label="Next image"
+          >
+            →
+          </button>
+        )}
+
+        {showNav && (
+          <p className="absolute bottom-6 left-1/2 -translate-x-1/2 font-mono-ui text-[11px] text-muted">
+            {index + 1} / {total}
+          </p>
         )}
       </div>
     </div>

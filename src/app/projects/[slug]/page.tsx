@@ -103,6 +103,7 @@ async function loadProject(slug: string) {
       width: r.width,
       label: r.label ?? undefined,
       workId: r.work_id,
+      meta: r.work_id ? { workId: r.work_id } : undefined,
     }));
   }
 

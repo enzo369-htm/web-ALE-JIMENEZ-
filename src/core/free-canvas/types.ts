@@ -9,6 +9,8 @@ export type CanvasItem = {
   width: number;
   /** Optional alt / caption. */
   label?: string;
+  /** Linked work id (Design A → carousel). */
+  workId?: string | null;
   /** Host-defined extras (caption fields, etc.). */
   meta?: Record<string, unknown>;
 };
@@ -20,5 +22,6 @@ export type CanvasItemInput = {
   y?: number | null;
   width?: number | null;
   label?: string;
+  workId?: string | null;
   meta?: Record<string, unknown>;
 };

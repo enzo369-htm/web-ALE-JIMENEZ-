@@ -7,22 +7,28 @@ import {
 } from "@/core/free-canvas";
 import WorkLightbox, { type LightboxWork } from "@/components/WorkLightbox";
 
-type WorkPayload = LightboxWork;
+type CanvasWorkItem = CanvasItemInput & { workId?: string | null };
+
+function resolveWorkId(item: CanvasWorkItem): string | null {
+  if (item.workId) return item.workId;
+  const fromMeta = item.meta?.workId;
+  return typeof fromMeta === "string" ? fromMeta : null;
+}
 
 export default function ProjectModeA({
   items,
   heightRatio,
   worksById,
 }: {
-  items: (CanvasItemInput & { workId?: string | null })[];
+  items: CanvasWorkItem[];
   heightRatio: number;
-  worksById: Record<string, WorkPayload>;
+  worksById: Record<string, LightboxWork>;
 }) {
-  const [active, setActive] = useState<WorkPayload | null>(null);
+  const [active, setActive] = useState<LightboxWork | null>(null);
   const positioned = useMemo(() => withDefaultPositions(items), [items]);
 
-  function openItem(item: CanvasItemInput & { workId?: string | null }) {
-    const workId = item.workId;
+  function openItem(item: CanvasWorkItem) {
+    const workId = resolveWorkId(item);
     if (workId && worksById[workId]) {
       setActive(worksById[workId]);
       return;
@@ -43,7 +49,7 @@ export default function ProjectModeA({
           <button
             key={item.id}
             type="button"
-            onClick={() => openItem(item as CanvasItemInput & { workId?: string | null })}
+            onClick={() => openItem(item)}
             className="mx-auto w-full max-w-[420px] text-left"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -67,7 +73,7 @@ export default function ProjectModeA({
           <button
             key={item.id}
             type="button"
-            onClick={() => openItem(item as CanvasItemInput & { workId?: string | null })}
+            onClick={() => openItem(item)}
             className="absolute text-left transition-opacity hover:opacity-90"
             style={{
               left: `${item.x}%`,
