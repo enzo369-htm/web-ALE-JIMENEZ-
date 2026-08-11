@@ -674,6 +674,8 @@ function ProjectNotesSection({
         bucket: BUCKET,
         path,
         file,
+        // Keep PNG alpha — downscale converts to JPEG and destroys transparency
+        downscale: false,
       });
       const pos = defaultPositionForIndex(items.length);
       const tempId = `tmp-${Date.now()}`;
@@ -746,8 +748,8 @@ function ProjectNotesSection({
     <section className="space-y-4 border border-gray-200 p-4">
       <h2 className="font-medium">Design B — Studio notes</h2>
       <p className="text-sm text-gray-600 max-w-2xl">
-        Upload photographed or scanned handwritten notes (PNG with transparent
-        or clean background works best). Position them around the centered work
+        Upload photographed or scanned handwritten notes. Use a real transparent
+        PNG (no checkerboard in the file). Position them around the centered work
         on the public page.
       </p>
       <div className="flex flex-wrap gap-3">

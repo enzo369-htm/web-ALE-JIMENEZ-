@@ -37,12 +37,17 @@ export async function downscaleImage(
   ctx.drawImage(bitmap, 0, 0, w, h);
   bitmap.close?.();
 
+  // Preserve PNG (and alpha). JPEG for photos / other formats.
+  const keepPng = file.type === "image/png" || file.type === "image/webp";
+  const mime = keepPng ? file.type : "image/jpeg";
+  const ext = keepPng ? (file.type === "image/webp" ? ".webp" : ".png") : ".jpg";
+
   const blob = await new Promise<Blob | null>((resolve) =>
-    canvas.toBlob(resolve, "image/jpeg", quality)
+    canvas.toBlob(resolve, mime, keepPng ? undefined : quality)
   );
   if (!blob) return file;
   if (blob.size >= file.size && scale === 1) return file;
 
-  const newName = file.name.replace(/\.[^.]+$/, "") + ".jpg";
-  return new File([blob], newName, { type: "image/jpeg" });
+  const newName = file.name.replace(/\.[^.]+$/, "") + ext;
+  return new File([blob], newName, { type: mime });
 }
