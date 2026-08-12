@@ -171,19 +171,13 @@ export default async function ProjectDetailPage({
           </Link>
         </div>
 
-        {project.display_mode === "a" ? (
-          canvasItems.length > 0 ? (
-            <ProjectModeA
-              items={canvasItems}
-              heightRatio={heightRatio}
-              worksById={worksById}
-            />
-          ) : (
-            <p className="text-center text-sm text-muted">
-              No works on the canvas yet. Add and position images in admin.
-            </p>
-          )
-        ) : (
+        {project.display_mode === "a" && canvasItems.length === 0 && (
+          <p className="text-center text-sm text-muted">
+            No works on the canvas yet. Add and position images in admin.
+          </p>
+        )}
+
+        {project.display_mode === "b" && (
           <ProjectModeB
             works={worksForLightbox.filter((w) => w.images.length > 0)}
             notes={notes.map((n) => ({
@@ -197,6 +191,16 @@ export default async function ProjectDetailPage({
           />
         )}
       </div>
+
+      {project.display_mode === "a" && canvasItems.length > 0 && (
+        <div className="mx-auto w-[90vw] max-w-none">
+          <ProjectModeA
+            items={canvasItems}
+            heightRatio={heightRatio}
+            worksById={worksById}
+          />
+        </div>
+      )}
     </main>
   );
 }
