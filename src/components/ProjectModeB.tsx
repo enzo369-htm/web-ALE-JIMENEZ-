@@ -86,7 +86,7 @@ export default function ProjectModeB({
 
       {/* Desktop: centered work + free notes */}
       <div
-        className="relative mx-auto hidden w-full max-w-5xl md:block"
+        className="relative mx-auto hidden w-full md:block"
         style={{ paddingTop: `${heightRatio * 100}%` }}
       >
         {positionedNotes.map((note) => (

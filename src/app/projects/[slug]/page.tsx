@@ -176,8 +176,20 @@ export default async function ProjectDetailPage({
             No works on the canvas yet. Add and position images in admin.
           </p>
         )}
+      </div>
 
-        {project.display_mode === "b" && (
+      {project.display_mode === "a" && canvasItems.length > 0 && (
+        <div className="mx-auto w-[90vw] max-w-none">
+          <ProjectModeA
+            items={canvasItems}
+            heightRatio={heightRatio}
+            worksById={worksById}
+          />
+        </div>
+      )}
+
+      {project.display_mode === "b" && (
+        <div className="mx-auto w-[90vw] max-w-none">
           <ProjectModeB
             works={worksForLightbox.filter((w) => w.images.length > 0)}
             notes={notes.map((n) => ({
@@ -188,16 +200,6 @@ export default async function ProjectDetailPage({
               width: n.width,
               label: "note",
             }))}
-          />
-        )}
-      </div>
-
-      {project.display_mode === "a" && canvasItems.length > 0 && (
-        <div className="mx-auto w-[90vw] max-w-none">
-          <ProjectModeA
-            items={canvasItems}
-            heightRatio={heightRatio}
-            worksById={worksById}
           />
         </div>
       )}
