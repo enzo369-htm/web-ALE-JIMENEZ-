@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 };
 
 const FALLBACK_BIO =
-  "Alejandra Jimenez is an artist whose practice moves between painting, writing, and sound. This site extends her studio — a place to wander through projects, selected works, texts, and listening spaces.";
+  "Alejandra Jimenez is an artist whose practice centers on painting. This site extends her studio — a place to wander through projects and selected works.";
 
 export default async function AboutPage() {
   let settings: SiteSettings | null = null;

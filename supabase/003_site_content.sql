@@ -23,7 +23,7 @@ create policy "Auth write site_settings"
 insert into site_settings (id, about_bio, email, instagram)
 values (
   1,
-  'Alejandra Jimenez is an artist whose practice moves between painting, writing, and sound. This site extends her studio — a place to wander through projects, selected works, texts, and listening spaces.',
+  'Alejandra Jimenez is an artist whose practice centers on painting. This site extends her studio — a place to wander through projects and selected works.',
   'hello@alejandrajimenez.example',
   'https://instagram.com/alejandrajimenez'
 )

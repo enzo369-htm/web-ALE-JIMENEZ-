@@ -17,16 +17,6 @@ const LINKS = [
     blurb: "Selected paintings gallery",
   },
   {
-    href: "/admin/texts",
-    label: "Texts",
-    blurb: "Substack links, excerpts, optional embeds",
-  },
-  {
-    href: "/admin/sounds",
-    label: "Sounds",
-    blurb: "Upload audio to Storage",
-  },
-  {
     href: "/admin/about",
     label: "About / Home",
     blurb: "Bio, contact, studio home image",

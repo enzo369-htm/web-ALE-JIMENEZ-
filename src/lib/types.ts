@@ -48,24 +48,6 @@ export type Painting = {
   sort_order: number;
 };
 
-export type TextEntry = {
-  id: string;
-  title: string;
-  excerpt: string | null;
-  substack_url: string;
-  embed_html: string | null;
-  published_at: string | null;
-  sort_order: number;
-};
-
-export type SoundTrack = {
-  id: string;
-  title: string;
-  audio_url: string;
-  cover_image_url: string | null;
-  sort_order: number;
-};
-
 export type SiteSettings = {
   id: number;
   studio_image_url: string | null;

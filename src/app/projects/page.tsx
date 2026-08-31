@@ -29,42 +29,34 @@ export default async function ProjectsPage() {
     <main className="min-h-screen pb-24">
       <SiteHeader activeHref="/projects" />
       <div className="site-container pt-6 md:pt-16">
-        <div className="grid gap-16 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-          <div>
-            <h1 className="mb-10 text-accent lowercase text-xl">projects</h1>
-            <ol className="space-y-4 text-lg md:text-xl leading-snug">
-              {projects.length === 0 && (
-                <li className="text-muted text-base">
-                  Projects will appear here after Supabase is connected and seeded.
-                </li>
-              )}
-              {projects.map((project, i) => (
-                <li key={project.id}>
-                  <Link
-                    href={`/projects/${project.slug}`}
-                    className="group transition-colors hover:text-accent"
-                  >
-                    <span className="font-mono-ui text-xs text-muted mr-2">
-                      {padIndex(i + 1)}.
-                    </span>
-                    <span className="lowercase">
-                      {projectMetaLine({
-                        title: project.title,
-                        location: project.location,
-                        year: project.year,
-                      })}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ol>
-          </div>
-          <div className="max-w-md prose-site text-muted lg:pt-16">
-            <p>
-              Four initial projects. Each opens in its own viewing mode — free
-              composition or a studio-wall simulation with process notes.
-            </p>
-          </div>
+        <div>
+          <h1 className="mb-10 text-accent lowercase text-xl">projects</h1>
+          <ol className="space-y-4 text-lg md:text-xl leading-snug">
+            {projects.length === 0 && (
+              <li className="text-muted text-base">
+                Projects will appear here after Supabase is connected and seeded.
+              </li>
+            )}
+            {projects.map((project, i) => (
+              <li key={project.id}>
+                <Link
+                  href={`/projects/${project.slug}`}
+                  className="group transition-colors hover:text-accent"
+                >
+                  <span className="font-mono-ui text-xs text-muted mr-2">
+                    {padIndex(i + 1)}.
+                  </span>
+                  <span className="lowercase">
+                    {projectMetaLine({
+                      title: project.title,
+                      location: project.location,
+                      year: project.year,
+                    })}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ol>
         </div>
       </div>
     </main>

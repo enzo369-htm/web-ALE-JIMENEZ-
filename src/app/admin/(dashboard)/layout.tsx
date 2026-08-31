@@ -5,8 +5,6 @@ const links = [
   { href: "/admin/home-hotspots", label: "Hero map" },
   { href: "/admin/projects", label: "Projects" },
   { href: "/admin/paintings", label: "Paintings" },
-  { href: "/admin/texts", label: "Texts" },
-  { href: "/admin/sounds", label: "Sounds" },
   { href: "/admin/about", label: "About" },
   { href: "/admin/canvas", label: "Canvas demo" },
 ];

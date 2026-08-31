@@ -29,8 +29,6 @@ export const HOME_PANELS = {
 export const HOME_LINK_OPTIONS = [
   { href: "/projects", label: "Projects" },
   { href: "/paintings", label: "Paintings" },
-  { href: "/texts", label: "Texts" },
-  { href: "/sounds", label: "Sounds" },
   { href: "/about", label: "About" },
 ] as const;
 
@@ -46,8 +44,8 @@ export const HOME_HOTSPOTS: HomeHotspot[] = [
   },
   {
     id: "left-notebook",
-    label: "Texts",
-    href: "/texts",
+    label: "About",
+    href: "/about",
     panel: "left",
     object: "Spiral notebook + pen on stool",
     points: "30,80 48,79 49,90 31,92",
@@ -70,8 +68,8 @@ export const HOME_HOTSPOTS: HomeHotspot[] = [
   },
   {
     id: "left-brushes",
-    label: "Sounds",
-    href: "/sounds",
+    label: "Projects",
+    href: "/projects",
     panel: "left",
     object: "Jar of brushes on white cabinet",
     points: "82,36 94,35 95,54 83,55",
@@ -102,16 +100,16 @@ export const HOME_HOTSPOTS: HomeHotspot[] = [
   },
   {
     id: "right-notebook",
-    label: "Texts",
-    href: "/texts",
+    label: "About",
+    href: "/about",
     panel: "right",
     object: "Notebook on glass stool",
     points: "64,74 88,72 90,88 66,90",
   },
   {
     id: "right-brushes",
-    label: "Sounds",
-    href: "/sounds",
+    label: "Projects",
+    href: "/projects",
     panel: "right",
     object: "Bundle of brushes on cart shelf",
     points: "34,50 68,48 69,62 35,64",

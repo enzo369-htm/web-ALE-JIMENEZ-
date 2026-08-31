@@ -26,7 +26,7 @@ Minimal panel for the client:
 - Login via Supabase Auth (email/password)
 - Middleware protecting `/admin/*`
 - Upload to Storage (`uploads` bucket) with image downscale
-- Edit: projects/works, paintings, texts, sounds, about + home studio image
+- Edit: projects/works, paintings, about + home studio image
 - Design A canvas editor and Design B notes editor live inside each project
 
 ## What is free positioning (free-canvas)?
@@ -47,8 +47,6 @@ Design B reuses the same editor pattern for **handwritten note scans** around a 
 | `/projects` | Project index |
 | `/projects/[slug]` | Design A or B viewer |
 | `/paintings` | Selected paintings gallery |
-| `/texts` | Substack doorway (excerpt + link / embed) |
-| `/sounds` | Audio player list |
 | `/about` | Bio, portrait, email, Instagram |
 
 ## Admin routes
@@ -61,8 +59,6 @@ Design B reuses the same editor pattern for **handwritten note scans** around a 
 | `/admin/projects` | Project list / create |
 | `/admin/projects/[id]` | Details, works, canvas (A) or notes (B) |
 | `/admin/paintings` | Selected paintings |
-| `/admin/texts` | Texts / Substack |
-| `/admin/sounds` | Sounds |
 | `/admin/about` | Bio, contact, studio home image |
 | `/admin/canvas` | Kit demo canvas (`slug=demo`) |
 
@@ -80,6 +76,8 @@ Home hotspot positions (not in admin yet): [`src/lib/home-hotspots.ts`](src/lib/
    - `supabase/006_project_notes.sql`
    - `supabase/007_paintings_texts_sounds.sql`
    - `supabase/008_home_hotspots.sql`
+   - `supabase/009_drop_sounds.sql` (if upgrading an older project that had Sounds)
+   - `supabase/010_drop_texts.sql` (if upgrading an older project that had Texts)
 3. Storage → create bucket **`uploads`** (public read; write for `authenticated`). Apply policies from `001`.
 4. Authentication → Users → create admin user (email + password).
 5. Settings → API → copy **Project URL** and **anon key** into `.env.local`.
@@ -114,7 +112,7 @@ Repo is initialized locally (`git init`). You:
 2. Upload **studio home** image → tune hotspots in `home-hotspots.ts`
 3. Replace placeholder **projects** titles/copy; add works + photos
 4. Mode A: place works on canvas; Mode B: upload real note scans
-5. About bio/contact; paintings; texts; sounds
+5. About bio/contact; paintings
 
 ## Design notes (handwritten notes)
 
