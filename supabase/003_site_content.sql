@@ -4,6 +4,10 @@
 create table if not exists site_settings (
   id int primary key default 1 check (id = 1),
   studio_image_url text,
+  hero_left_image_url text,
+  hero_right_image_url text,
+  hero_full_image_url text,
+  hero_layout text check (hero_layout is null or hero_layout in ('dual', 'single')),
   about_bio text,
   about_photo_url text,
   email text,

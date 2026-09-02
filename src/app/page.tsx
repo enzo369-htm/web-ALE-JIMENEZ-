@@ -1,35 +1,36 @@
 import { createClient } from "@/core/supabase/server";
 import StudioHome from "@/components/StudioHome";
-import {
-  HOME_HOTSPOTS,
-  type HomeHotspot,
-  type HomePanel,
-} from "@/lib/home-hotspots";
+import type { HeroLayout } from "@/lib/types";
 
 export default async function HomePage() {
-  let hotspots: HomeHotspot[] = HOME_HOTSPOTS;
+  let layout: HeroLayout = "dual";
+  let leftSrc: string | null = null;
+  let rightSrc: string | null = null;
+  let fullSrc: string | null = null;
 
   try {
     const supabase = await createClient();
     const { data } = await supabase
-      .from("home_hotspots")
-      .select("id, panel, label, href, object_note, points, sort_order")
-      .order("sort_order", { ascending: true });
-
-    if (data && data.length > 0) {
-      hotspots = data.map((row) => ({
-        id: row.id,
-        panel: row.panel as HomePanel,
-        label: row.label,
-        href: row.href,
-        object: row.object_note ?? undefined,
-        points: row.points,
-        sort_order: row.sort_order,
-      }));
-    }
+      .from("site_settings")
+      .select(
+        "hero_layout, hero_left_image_url, hero_right_image_url, hero_full_image_url"
+      )
+      .eq("id", 1)
+      .maybeSingle();
+    layout = data?.hero_layout === "single" ? "single" : "dual";
+    leftSrc = data?.hero_left_image_url ?? null;
+    rightSrc = data?.hero_right_image_url ?? null;
+    fullSrc = data?.hero_full_image_url ?? null;
   } catch {
-    hotspots = HOME_HOTSPOTS;
+    // fall back to static dual panels in StudioHome
   }
 
-  return <StudioHome hotspots={hotspots} />;
+  return (
+    <StudioHome
+      layout={layout}
+      leftSrc={leftSrc}
+      rightSrc={rightSrc}
+      fullSrc={fullSrc}
+    />
+  );
 }

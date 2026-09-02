@@ -30,7 +30,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${ebGaramond.variable} ${ibmPlexMono.variable}`}>
+    <html
+      lang="en"
+      className={`${ebGaramond.variable} ${ibmPlexMono.variable}`}
+      suppressHydrationWarning
+    >
       <body className="min-h-screen antialiased bg-bg text-ink">{children}</body>
     </html>
   );

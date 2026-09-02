@@ -55,14 +55,13 @@ Design B reuses the same editor pattern for **handwritten note scans** around a 
 |-------|---------|
 | `/admin/login` | Sign in |
 | `/admin` | Overview |
-| `/admin/home-hotspots` | Trace hero object contours (mouse) |
 | `/admin/projects` | Project list / create |
 | `/admin/projects/[id]` | Details, works, canvas (A) or notes (B) |
 | `/admin/paintings` | Selected paintings |
 | `/admin/about` | Bio, contact, studio home image |
 | `/admin/canvas` | Kit demo canvas (`slug=demo`) |
 
-Home hotspot positions (not in admin yet): [`src/lib/home-hotspots.ts`](src/lib/home-hotspots.ts).
+Hero photos: [`src/lib/home.ts`](src/lib/home.ts) (`public/home/studio-left.png`, `studio-right.png`). Contour-hotspot kit lives outside this repo in `Desktop/webs/sistema seleccion de objetos`.
 
 ## Supabase checklist (manual)
 
@@ -75,7 +74,7 @@ Home hotspot positions (not in admin yet): [`src/lib/home-hotspots.ts`](src/lib/
    - `supabase/005_works.sql`
    - `supabase/006_project_notes.sql`
    - `supabase/007_paintings_texts_sounds.sql`
-   - `supabase/008_home_hotspots.sql`
+   - `supabase/008_home_hotspots.sql` (opcional / legacy; el hero ya no usa hotspots — kit en Desktop/webs/sistema seleccion de objetos)
    - `supabase/009_drop_sounds.sql` (if upgrading an older project that had Sounds)
    - `supabase/010_drop_texts.sql` (if upgrading an older project that had Texts)
 3. Storage → create bucket **`uploads`** (public read; write for `authenticated`). Apply policies from `001`.
@@ -109,7 +108,7 @@ Repo is initialized locally (`git init`). You:
 ## What to personalize first
 
 1. Connect Supabase (checklist above)
-2. Upload **studio home** image → tune hotspots in `home-hotspots.ts`
+2. Confirm hero photos in `public/home/` (see `src/lib/home.ts`)
 3. Replace placeholder **projects** titles/copy; add works + photos
 4. Mode A: place works on canvas; Mode B: upload real note scans
 5. About bio/contact; paintings

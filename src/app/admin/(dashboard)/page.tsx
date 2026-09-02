@@ -2,9 +2,9 @@ import Link from "next/link";
 
 const LINKS = [
   {
-    href: "/admin/home-hotspots",
-    label: "Hero map",
-    blurb: "Trace object contours on the studio photos for the interactive home",
+    href: "/admin/hero",
+    label: "Hero",
+    blurb: "Left and right photos for the landing hero",
   },
   {
     href: "/admin/projects",
@@ -17,9 +17,14 @@ const LINKS = [
     blurb: "Selected paintings gallery",
   },
   {
+    href: "/admin/texts",
+    label: "Texts",
+    blurb: "Publish writings: title, short text, full text",
+  },
+  {
     href: "/admin/about",
-    label: "About / Home",
-    blurb: "Bio, contact, studio home image",
+    label: "About",
+    blurb: "Bio, contact, and portrait",
   },
 ];
 

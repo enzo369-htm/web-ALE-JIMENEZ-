@@ -13,7 +13,6 @@ export default function AboutAdmin({
   const [form, setForm] = useState({
     about_bio: initial?.about_bio ?? "",
     about_photo_url: initial?.about_photo_url ?? "",
-    studio_image_url: initial?.studio_image_url ?? "",
     email: initial?.email ?? "",
     instagram: initial?.instagram ?? "",
   });
@@ -28,7 +27,6 @@ export default function AboutAdmin({
       id: 1,
       about_bio: form.about_bio || null,
       about_photo_url: form.about_photo_url || null,
-      studio_image_url: form.studio_image_url || null,
       email: form.email || null,
       instagram: form.instagram || null,
       updated_at: new Date().toISOString(),
@@ -44,18 +42,17 @@ export default function AboutAdmin({
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-medium">About / Home</h1>
-        <p className="mt-1 text-sm text-gray-600 max-w-xl">
-          Bio, contact, portrait, and the studio photograph used as the
-          interactive home background.
+        <h1 className="text-2xl font-medium">About</h1>
+        <p className="mt-1 max-w-xl text-sm text-gray-600">
+          Bio, contact, and portrait for the About page.
         </p>
       </div>
 
-      <div className="space-y-4 border border-gray-200 p-4 max-w-2xl">
+      <div className="max-w-2xl space-y-4 border border-gray-200 p-4">
         <label className="block text-sm">
           Bio
           <textarea
-            className="mt-1 w-full border border-gray-300 px-3 py-2 min-h-32"
+            className="mt-1 min-h-32 w-full border border-gray-300 px-3 py-2"
             value={form.about_bio}
             onChange={(e) => setForm({ ...form, about_bio: e.target.value })}
           />
@@ -78,20 +75,11 @@ export default function AboutAdmin({
         </label>
 
         <div>
-          <p className="text-sm mb-2">About portrait</p>
+          <p className="mb-2 text-sm">About portrait</p>
           <ImageUploadField
             prefix="about"
             value={form.about_photo_url}
             onUploaded={(url) => setForm({ ...form, about_photo_url: url })}
-          />
-        </div>
-
-        <div>
-          <p className="text-sm mb-2">Home studio image</p>
-          <ImageUploadField
-            prefix="home"
-            value={form.studio_image_url}
-            onUploaded={(url) => setForm({ ...form, studio_image_url: url })}
           />
         </div>
 

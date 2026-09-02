@@ -48,9 +48,25 @@ export type Painting = {
   sort_order: number;
 };
 
+export type TextEntry = {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string | null;
+  body: string;
+  published_at: string | null;
+  sort_order: number;
+};
+
+export type HeroLayout = "dual" | "single";
+
 export type SiteSettings = {
   id: number;
   studio_image_url: string | null;
+  hero_left_image_url: string | null;
+  hero_right_image_url: string | null;
+  hero_full_image_url: string | null;
+  hero_layout: HeroLayout | null;
   about_bio: string | null;
   about_photo_url: string | null;
   email: string | null;
