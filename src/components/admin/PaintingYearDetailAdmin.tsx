@@ -488,7 +488,6 @@ function PaintingCanvasSection({
   const [items, setItems] = useState(() => rowsToItems(initialItems));
   const [heightRatio, setHeightRatio] = useState(initialRatio);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [linkPaintingId, setLinkPaintingId] = useState("");
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState("");
@@ -509,19 +508,13 @@ function PaintingCanvasSection({
       });
       const pos = defaultPositionForIndex(items.length);
       const tempId = `tmp-${Date.now()}`;
-      const painting = paintings.find((p) => p.id === linkPaintingId);
-      const url =
-        painting?.cover_image_url ||
-        painting?.images[0]?.image_url ||
-        publicUrl;
       setItems((prev) => [
         ...prev,
         {
           id: tempId,
-          imageUrl: url,
-          label: painting?.title || file.name,
-          paintingId: linkPaintingId || null,
-          meta: linkPaintingId ? { workId: linkPaintingId } : undefined,
+          imageUrl: publicUrl,
+          label: file.name,
+          paintingId: null,
           ...pos,
         },
       ]);
@@ -655,25 +648,13 @@ function PaintingCanvasSection({
         </button>
         <select
           className="border border-gray-300 px-3 py-2 text-sm"
-          value={linkPaintingId}
-          onChange={(e) => setLinkPaintingId(e.target.value)}
-        >
-          <option value="">Link upload to painting (optional)</option>
-          {paintings.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.title}
-            </option>
-          ))}
-        </select>
-        <select
-          className="border border-gray-300 px-3 py-2 text-sm"
           defaultValue=""
           onChange={(e) => {
             if (e.target.value) addPaintingToCanvas(e.target.value);
             e.target.value = "";
           }}
         >
-          <option value="">Place existing painting…</option>
+          <option value="">Place painting on canvas…</option>
           {paintings.map((p) => (
             <option key={p.id} value={p.id}>
               {p.title}

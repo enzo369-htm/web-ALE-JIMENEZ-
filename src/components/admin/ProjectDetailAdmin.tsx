@@ -476,7 +476,6 @@ function ProjectCanvasSection({
   const [items, setItems] = useState(() => rowsToItems(initialItems));
   const [heightRatio, setHeightRatio] = useState(initialRatio);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [linkWorkId, setLinkWorkId] = useState("");
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState("");
@@ -497,15 +496,13 @@ function ProjectCanvasSection({
       });
       const pos = defaultPositionForIndex(items.length);
       const tempId = `tmp-${Date.now()}`;
-      const work = works.find((w) => w.id === linkWorkId);
       setItems((prev) => [
         ...prev,
         {
           id: tempId,
-          imageUrl: work?.cover_image_url || publicUrl,
-          label: work?.title || file.name,
-          workId: linkWorkId || null,
-          meta: linkWorkId ? { workId: linkWorkId } : undefined,
+          imageUrl: publicUrl,
+          label: file.name,
+          workId: null,
           ...pos,
         },
       ]);
@@ -640,25 +637,13 @@ function ProjectCanvasSection({
         </button>
         <select
           className="border border-gray-300 px-3 py-2 text-sm"
-          value={linkWorkId}
-          onChange={(e) => setLinkWorkId(e.target.value)}
-        >
-          <option value="">Link upload to work (optional)</option>
-          {works.map((w) => (
-            <option key={w.id} value={w.id}>
-              {w.title}
-            </option>
-          ))}
-        </select>
-        <select
-          className="border border-gray-300 px-3 py-2 text-sm"
           defaultValue=""
           onChange={(e) => {
             if (e.target.value) addWorkToCanvas(e.target.value);
             e.target.value = "";
           }}
         >
-          <option value="">Place existing work…</option>
+          <option value="">Place work on canvas…</option>
           {works.map((w) => (
             <option key={w.id} value={w.id}>
               {w.title}
