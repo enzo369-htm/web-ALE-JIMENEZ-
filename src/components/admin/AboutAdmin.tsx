@@ -15,6 +15,7 @@ export default function AboutAdmin({
     about_photo_url: initial?.about_photo_url ?? "",
     email: initial?.email ?? "",
     instagram: initial?.instagram ?? "",
+    cv_url: initial?.cv_url ?? "",
   });
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
@@ -29,6 +30,7 @@ export default function AboutAdmin({
       about_photo_url: form.about_photo_url || null,
       email: form.email || null,
       instagram: form.instagram || null,
+      cv_url: form.cv_url || null,
       updated_at: new Date().toISOString(),
     });
     setSaving(false);
@@ -44,7 +46,7 @@ export default function AboutAdmin({
       <div>
         <h1 className="text-2xl font-medium">About</h1>
         <p className="mt-1 max-w-xl text-sm text-gray-600">
-          Bio, contact, and portrait for the About page.
+          Bio, contact, CV, and portrait for the About page.
         </p>
       </div>
 
@@ -73,6 +75,27 @@ export default function AboutAdmin({
             onChange={(e) => setForm({ ...form, instagram: e.target.value })}
           />
         </label>
+
+        <div>
+          <p className="mb-2 text-sm">CV (PDF)</p>
+          <ImageUploadField
+            label="Upload PDF"
+            prefix="about/cv"
+            accept="application/pdf,.pdf"
+            downscale={false}
+            value={form.cv_url}
+            onUploaded={(url) => setForm({ ...form, cv_url: url })}
+          />
+          {form.cv_url ? (
+            <button
+              type="button"
+              className="mt-2 text-sm text-red-600"
+              onClick={() => setForm({ ...form, cv_url: "" })}
+            >
+              Remove CV
+            </button>
+          ) : null}
+        </div>
 
         <div>
           <p className="mb-2 text-sm">About portrait</p>

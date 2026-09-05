@@ -7,7 +7,7 @@ export default async function AdminAboutPage() {
   const { data, error } = await supabase
     .from("site_settings")
     .select(
-      "id, studio_image_url, hero_left_image_url, hero_right_image_url, about_bio, about_photo_url, email, instagram"
+      "id, studio_image_url, hero_left_image_url, hero_right_image_url, about_bio, about_photo_url, email, instagram, cv_url"
     )
     .eq("id", 1)
     .maybeSingle();

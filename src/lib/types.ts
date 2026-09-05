@@ -113,4 +113,5 @@ export type SiteSettings = {
   about_photo_url: string | null;
   email: string | null;
   instagram: string | null;
+  cv_url: string | null;
 };

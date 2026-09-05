@@ -29,6 +29,14 @@ export default function ImageUploadField({
     setUploading(true);
     setError("");
     try {
+      if (accept.includes("pdf")) {
+        const isPdf =
+          file.type === "application/pdf" ||
+          file.name.toLowerCase().endsWith(".pdf");
+        if (!isPdf) {
+          throw new Error("Please upload a PDF file.");
+        }
+      }
       const supabase = createClient();
       const path = buildUploadPath(prefix, file.name);
       const { publicUrl } = await uploadFile({

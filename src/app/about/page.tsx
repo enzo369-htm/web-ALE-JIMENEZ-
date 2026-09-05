@@ -18,7 +18,7 @@ export default async function AboutPage() {
     const { data } = await supabase
       .from("site_settings")
       .select(
-        "id, studio_image_url, about_bio, about_photo_url, email, instagram"
+        "id, studio_image_url, about_bio, about_photo_url, email, instagram, cv_url"
       )
       .eq("id", 1)
       .maybeSingle();
@@ -60,6 +60,18 @@ export default async function AboutPage() {
                   Instagram
                 </a>
               </p>
+              {settings?.cv_url ? (
+                <p>
+                  <a
+                    href={settings.cv_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="hover:text-ink"
+                  >
+                    CV
+                  </a>
+                </p>
+              ) : null}
             </div>
 
             <p className="prose-site max-w-md">{bio}</p>
