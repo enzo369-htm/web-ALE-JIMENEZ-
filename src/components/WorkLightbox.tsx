@@ -23,8 +23,8 @@ export type LightboxWork = {
   medium?: string | null;
   images: string[];
   notes?: LightboxNote[];
-  /** Fixed under the painting in the lightbox only. */
-  techSheetUrl?: string | null;
+  /** Fixed text under the painting in the lightbox only. */
+  techSheetText?: string | null;
 };
 
 export default function WorkLightbox({
@@ -48,7 +48,7 @@ export default function WorkLightbox({
     [work?.notes]
   );
   const hasNotes = notes.length > 0;
-  const techSheetUrl = work?.techSheetUrl ?? null;
+  const techSheetText = work?.techSheetText?.trim() || null;
 
   const go = useCallback(
     (dir: -1 | 1) => {
@@ -126,13 +126,10 @@ export default function WorkLightbox({
               </button>
             )}
           </div>
-          {techSheetUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={techSheetUrl}
-              alt="Ficha técnica"
-              className="mx-auto max-h-[18vh] w-auto max-w-[70%] object-contain"
-            />
+          {techSheetText && (
+            <p className="mx-auto max-w-[70%] whitespace-pre-wrap text-center text-sm text-muted">
+              {techSheetText}
+            </p>
           )}
           {hasNotes && (
             <div className="grid w-full grid-cols-2 gap-4 px-2 pb-4">
@@ -172,7 +169,7 @@ export default function WorkLightbox({
             ))}
           </div>
 
-          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 px-24 pb-8">
+          <div className="absolute inset-0 z-10 flex items-center justify-center px-24">
             {showNav && (
               <button
                 type="button"
@@ -183,20 +180,19 @@ export default function WorkLightbox({
                 ←
               </button>
             )}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={images[index]}
-              alt={`${work.title} — ${index + 1} of ${total}`}
-              className={LIGHTBOX_CENTER_IMG_CLASS}
-            />
-            {techSheetUrl && (
-              // eslint-disable-next-line @next/next/no-img-element
+            <div className="relative flex max-h-full max-w-full flex-col items-center">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={techSheetUrl}
-                alt="Ficha técnica"
-                className="max-h-[14vh] w-auto max-w-[28%] object-contain"
+                src={images[index]}
+                alt={`${work.title} — ${index + 1} of ${total}`}
+                className={LIGHTBOX_CENTER_IMG_CLASS}
               />
-            )}
+              {techSheetText && (
+                <p className="pointer-events-none absolute left-1/2 top-full mt-3 w-max max-w-[90vw] -translate-x-1/2 whitespace-pre-wrap text-center text-sm leading-snug text-muted md:max-w-[36vw]">
+                  {techSheetText}
+                </p>
+              )}
+            </div>
             {showNav && (
               <button
                 type="button"

@@ -87,7 +87,7 @@ export default function PaintingYearDetailAdmin({
       const { data: page, error } = await supabase
         .from("canvas_pages")
         .insert({
-          slug: `paintings-${yearGroup.slug}`,
+          slug: `paintings-${yearGroup.slug}-${yearGroup.id.slice(0, 8)}`,
           title: `${yearGroup.title} canvas`,
           height_ratio: 1.15,
         })
@@ -281,7 +281,7 @@ function PaintingsSection({
         sort_order: sortOrder,
       })
       .select(
-        "id, year_id, title, year, medium, image_url, cover_image_url, tech_sheet_url, sort_order"
+        "id, year_id, title, year, medium, image_url, cover_image_url, tech_sheet_text, sort_order"
       )
       .single();
     setBusy(false);
@@ -335,10 +335,14 @@ function PaintingsSection({
     }
     const images = [...painting.images, data as PaintingImage];
     const cover = painting.cover_image_url || url;
-    await supabase
+    const { error: coverError } = await supabase
       .from("paintings")
       .update({ cover_image_url: cover, image_url: cover })
       .eq("id", painting.id);
+    if (coverError) {
+      setMsg(coverError.message);
+      return;
+    }
     onChange(
       paintings.map((p) =>
         p.id === painting.id
@@ -392,14 +396,32 @@ function PaintingsSection({
                 className="border border-gray-300 px-3 py-2 text-sm"
                 value={painting.title}
                 onChange={(e) =>
-                  void updatePainting(painting, { title: e.target.value })
+                  onChange(
+                    paintings.map((p) =>
+                      p.id === painting.id
+                        ? { ...p, title: e.target.value }
+                        : p
+                    )
+                  )
+                }
+                onBlur={() =>
+                  void updatePainting(painting, { title: painting.title })
                 }
               />
               <input
                 className="border border-gray-300 px-3 py-2 text-sm"
                 value={painting.year ?? ""}
                 onChange={(e) =>
-                  void updatePainting(painting, { year: e.target.value })
+                  onChange(
+                    paintings.map((p) =>
+                      p.id === painting.id
+                        ? { ...p, year: e.target.value }
+                        : p
+                    )
+                  )
+                }
+                onBlur={() =>
+                  void updatePainting(painting, { year: painting.year })
                 }
                 placeholder="Year"
               />
@@ -407,7 +429,16 @@ function PaintingsSection({
                 className="border border-gray-300 px-3 py-2 text-sm"
                 value={painting.medium ?? ""}
                 onChange={(e) =>
-                  void updatePainting(painting, { medium: e.target.value })
+                  onChange(
+                    paintings.map((p) =>
+                      p.id === painting.id
+                        ? { ...p, medium: e.target.value }
+                        : p
+                    )
+                  )
+                }
+                onBlur={() =>
+                  void updatePainting(painting, { medium: painting.medium })
                 }
                 placeholder="Medium"
               />
@@ -445,7 +476,7 @@ function PaintingsSection({
                 className="border border-gray-300 px-3 py-2 text-sm"
               >
                 Cargar ficha técnica
-                {painting.tech_sheet_url ? " ✓" : ""}
+                {painting.tech_sheet_text ? " ✓" : ""}
               </button>
               <button
                 type="button"
@@ -490,12 +521,11 @@ function PaintingsSection({
           title={techPainting.title}
           table="paintings"
           entityId={techPainting.id}
-          initialUrl={techPainting.tech_sheet_url}
-          uploadPrefix={`tech-sheets/${techPainting.id}`}
-          onSaved={(url) => {
+          initialText={techPainting.tech_sheet_text}
+          onSaved={(text) => {
             onChange(
               paintings.map((p) =>
-                p.id === techPainting.id ? { ...p, tech_sheet_url: url } : p
+                p.id === techPainting.id ? { ...p, tech_sheet_text: text } : p
               )
             );
           }}
@@ -602,9 +632,6 @@ function PaintingCanvasSection({
     const removed = [...knownIds.current].filter(
       (id) => !currentIds.has(id) && !id.startsWith("tmp-")
     );
-    if (removed.length) {
-      await supabase.from("canvas_items").delete().in("id", removed);
-    }
 
     const nextItems: typeof items = [];
     for (let i = 0; i < items.length; i++) {
@@ -648,6 +675,18 @@ function PaintingCanvasSection({
           return;
         }
         nextItems.push(item);
+      }
+    }
+
+    if (removed.length) {
+      const { error: delError } = await supabase
+        .from("canvas_items")
+        .delete()
+        .in("id", removed);
+      if (delError) {
+        setSaving(false);
+        setMessage(delError.message);
+        return;
       }
     }
 

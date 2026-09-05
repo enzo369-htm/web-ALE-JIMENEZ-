@@ -23,10 +23,40 @@ export default async function AdminProjectDetailPage({
 
   if (error || !project) notFound();
 
+  let projectRow = project as Project;
+
+  if (!projectRow.canvas_page_id) {
+    const { data: page, error: pageError } = await supabase
+      .from("canvas_pages")
+      .insert({
+        slug: `project-${projectRow.slug}-${projectRow.id.slice(0, 8)}`,
+        title: `${projectRow.title} canvas`,
+        height_ratio: 1.15,
+      })
+      .select("id, height_ratio")
+      .single();
+
+    if (!pageError && page) {
+      const { error: linkError } = await supabase
+        .from("projects")
+        .update({ canvas_page_id: page.id, display_mode: "a" })
+        .eq("id", projectRow.id);
+      if (linkError) {
+        await supabase.from("canvas_pages").delete().eq("id", page.id);
+      } else {
+        projectRow = {
+          ...projectRow,
+          canvas_page_id: page.id,
+          display_mode: "a",
+        };
+      }
+    }
+  }
+
   const { data: works } = await supabase
     .from("works")
     .select(
-      "id, project_id, title, year, medium, cover_image_url, tech_sheet_url, sort_order"
+      "id, project_id, title, year, medium, cover_image_url, tech_sheet_text, sort_order"
     )
     .eq("project_id", id)
     .order("sort_order", { ascending: true });
@@ -68,11 +98,11 @@ export default async function AdminProjectDetailPage({
     work_id: string | null;
   }[] = [];
 
-  if (project.canvas_page_id) {
+  if (projectRow.canvas_page_id) {
     const { data: page } = await supabase
       .from("canvas_pages")
       .select("id, height_ratio")
-      .eq("id", project.canvas_page_id)
+      .eq("id", projectRow.canvas_page_id)
       .maybeSingle();
     canvasPage = page;
     if (page) {
@@ -87,7 +117,7 @@ export default async function AdminProjectDetailPage({
 
   return (
     <ProjectDetailAdmin
-      project={project as Project}
+      project={projectRow}
       works={worksWithImages}
       canvasPage={canvasPage}
       canvasItems={canvasItems}

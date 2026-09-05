@@ -34,7 +34,7 @@ async function loadProject(slug: string) {
   const { data: works } = await supabase
     .from("works")
     .select(
-      "id, project_id, title, year, medium, cover_image_url, tech_sheet_url, sort_order"
+      "id, project_id, title, year, medium, cover_image_url, tech_sheet_text, sort_order"
     )
     .eq("project_id", project.id)
     .order("sort_order", { ascending: true });
@@ -83,7 +83,7 @@ async function loadProject(slug: string) {
       medium: w.medium,
       images: imgs,
       notes: notesByWork[w.id] ?? [],
-      techSheetUrl: w.tech_sheet_url,
+      techSheetText: w.tech_sheet_text,
     };
   });
 

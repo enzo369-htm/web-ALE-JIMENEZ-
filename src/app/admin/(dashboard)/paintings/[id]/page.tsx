@@ -41,18 +41,22 @@ export default async function AdminPaintingYearPage({
       .single();
 
     if (!pageError && page) {
-      await supabase
+      const { error: linkError } = await supabase
         .from("painting_years")
         .update({ canvas_page_id: page.id })
         .eq("id", year.id);
-      year = { ...year, canvas_page_id: page.id };
+      if (linkError) {
+        await supabase.from("canvas_pages").delete().eq("id", page.id);
+      } else {
+        year = { ...year, canvas_page_id: page.id };
+      }
     }
   }
 
   const { data: paintingRows } = await supabase
     .from("paintings")
     .select(
-      "id, year_id, title, year, medium, image_url, cover_image_url, tech_sheet_url, sort_order"
+      "id, year_id, title, year, medium, image_url, cover_image_url, tech_sheet_text, sort_order"
     )
     .eq("year_id", id)
     .order("sort_order", { ascending: true });

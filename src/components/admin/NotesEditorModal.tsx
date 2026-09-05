@@ -109,9 +109,6 @@ export default function NotesEditorModal({
     const removed = [...knownIds.current].filter(
       (id) => !currentIds.has(id) && !id.startsWith("tmp-")
     );
-    if (removed.length) {
-      await supabase.from(table).delete().in("id", removed);
-    }
 
     const next: NoteRecord[] = [];
     for (let i = 0; i < items.length; i++) {
@@ -154,6 +151,18 @@ export default function NotesEditorModal({
           width: item.width,
           sort_order: i,
         });
+      }
+    }
+
+    if (removed.length) {
+      const { error: delError } = await supabase
+        .from(table)
+        .delete()
+        .in("id", removed);
+      if (delError) {
+        setSaving(false);
+        setMessage(delError.message);
+        return;
       }
     }
 

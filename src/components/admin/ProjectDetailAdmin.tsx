@@ -94,7 +94,7 @@ export default function ProjectDetailAdmin({
       const { data: page, error } = await supabase
         .from("canvas_pages")
         .insert({
-          slug: project.slug,
+          slug: `project-${project.slug}-${project.id.slice(0, 8)}`,
           title: `${project.title} canvas`,
           height_ratio: 1.15,
         })
@@ -274,7 +274,7 @@ function WorksSection({
         sort_order: sortOrder,
       })
       .select(
-        "id, project_id, title, year, medium, cover_image_url, tech_sheet_url, sort_order"
+        "id, project_id, title, year, medium, cover_image_url, tech_sheet_text, sort_order"
       )
       .single();
     setBusy(false);
@@ -320,10 +320,14 @@ function WorksSection({
     }
     const images = [...work.images, data as WorkImage];
     const cover = work.cover_image_url || url;
-    await supabase
+    const { error: coverError } = await supabase
       .from("works")
       .update({ cover_image_url: cover })
       .eq("id", work.id);
+    if (coverError) {
+      setMsg(coverError.message);
+      return;
+    }
     onChange(
       works.map((w) =>
         w.id === work.id ? { ...w, images, cover_image_url: cover } : w
@@ -444,7 +448,7 @@ function WorksSection({
                 className="border border-gray-300 px-3 py-2 text-sm"
               >
                 Cargar ficha técnica
-                {work.tech_sheet_url ? " ✓" : ""}
+                {work.tech_sheet_text ? " ✓" : ""}
               </button>
               <button
                 type="button"
@@ -480,12 +484,11 @@ function WorksSection({
           title={techWork.title}
           table="works"
           entityId={techWork.id}
-          initialUrl={techWork.tech_sheet_url}
-          uploadPrefix={`tech-sheets/${techWork.id}`}
-          onSaved={(url) => {
+          initialText={techWork.tech_sheet_text}
+          onSaved={(text) => {
             onChange(
               works.map((w) =>
-                w.id === techWork.id ? { ...w, tech_sheet_url: url } : w
+                w.id === techWork.id ? { ...w, tech_sheet_text: text } : w
               )
             );
           }}
@@ -550,9 +553,6 @@ function ProjectCanvasSection({
 
   function addWorkToCanvas(workId: string) {
     const work = works.find((w) => w.id === workId);
-    if (!work?.cover_image_url && work?.images[0]) {
-      // use first image
-    }
     const url = work?.cover_image_url || work?.images[0]?.image_url;
     if (!work || !url) {
       setMessage("Work needs at least one image first.");
@@ -594,9 +594,6 @@ function ProjectCanvasSection({
     const removed = [...knownIds.current].filter(
       (id) => !currentIds.has(id) && !id.startsWith("tmp-")
     );
-    if (removed.length) {
-      await supabase.from("canvas_items").delete().in("id", removed);
-    }
 
     const nextItems: typeof items = [];
     for (let i = 0; i < items.length; i++) {
@@ -639,6 +636,18 @@ function ProjectCanvasSection({
           return;
         }
         nextItems.push(item);
+      }
+    }
+
+    if (removed.length) {
+      const { error: delError } = await supabase
+        .from("canvas_items")
+        .delete()
+        .in("id", removed);
+      if (delError) {
+        setSaving(false);
+        setMessage(delError.message);
+        return;
       }
     }
 

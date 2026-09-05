@@ -76,3 +76,28 @@ begin
     where id = r.id;
   end loop;
 end $$;
+
+-- Ensure every painting year has a canvas page (public + admin).
+do $$
+declare
+  r record;
+  new_page_id uuid;
+begin
+  for r in
+    select id, slug, title
+    from painting_years
+    where canvas_page_id is null
+  loop
+    insert into canvas_pages (slug, title, height_ratio)
+    values (
+      'paintings-' || r.slug || '-' || substr(r.id::text, 1, 8),
+      coalesce(r.title, r.slug) || ' canvas',
+      1.15
+    )
+    returning id into new_page_id;
+
+    update painting_years
+    set canvas_page_id = new_page_id
+    where id = r.id;
+  end loop;
+end $$;

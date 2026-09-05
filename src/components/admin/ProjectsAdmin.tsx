@@ -8,6 +8,8 @@ import type { Project } from "@/lib/types";
 
 function slugify(input: string) {
   return input
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .trim()
     .replace(/[^a-z0-9]+/g, "-")
@@ -30,13 +32,21 @@ export default function ProjectsAdmin({
     setBusy(true);
     setMessage("");
     const supabase = createClient();
-    const slug = slugify(title) || `project-${Date.now()}`;
+    const baseSlug = slugify(title) || `project-${Date.now()}`;
+    let slug = baseSlug;
+    const existing = new Set(projects.map((p) => p.slug));
+    let n = 2;
+    while (existing.has(slug)) {
+      slug = `${baseSlug}-${n}`;
+      n += 1;
+    }
 
+    const canvasSlug = `project-${slug}-${Date.now().toString(36).slice(-6)}`;
     const { data: page, error: pageError } = await supabase
       .from("canvas_pages")
       .insert({
-        slug,
-        title: `${title} canvas`,
+        slug: canvasSlug,
+        title: `${title.trim()} canvas`,
         height_ratio: 1.15,
       })
       .select("id")
@@ -66,11 +76,14 @@ export default function ProjectsAdmin({
       )
       .single();
 
-    setBusy(false);
     if (error) {
+      await supabase.from("canvas_pages").delete().eq("id", page.id);
+      setBusy(false);
       setMessage(error.message);
       return;
     }
+
+    setBusy(false);
     setProjects((prev) => [...prev, data as Project]);
     setTitle("");
     setMessage("Created.");
@@ -81,10 +94,22 @@ export default function ProjectsAdmin({
   async function removeProject(id: string) {
     if (!confirm("Delete this project and related works/notes?")) return;
     const supabase = createClient();
+    const project = projects.find((p) => p.id === id);
     const { error } = await supabase.from("projects").delete().eq("id", id);
     if (error) {
       setMessage(error.message);
       return;
+    }
+    if (project?.canvas_page_id) {
+      const { error: pageError } = await supabase
+        .from("canvas_pages")
+        .delete()
+        .eq("id", project.canvas_page_id);
+      if (pageError) {
+        setMessage(
+          `Project deleted, but canvas cleanup failed: ${pageError.message}`
+        );
+      }
     }
     setProjects((prev) => prev.filter((p) => p.id !== id));
     router.refresh();

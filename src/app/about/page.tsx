@@ -71,10 +71,10 @@ export default async function AboutPage() {
               <img
                 src={settings.about_photo_url}
                 alt="Alejandra Jimenez"
-                className="w-full h-auto object-cover"
+                className="h-auto w-[85%] object-cover"
               />
             ) : (
-              <div className="aspect-[4/5] w-full bg-[#e5e0d4] flex items-end p-6">
+              <div className="flex aspect-[4/5] w-[85%] items-end bg-[#e5e0d4] p-6">
                 <p className="font-mono-ui text-[11px] uppercase tracking-wide text-muted">
                   Portrait placeholder
                 </p>

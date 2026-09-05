@@ -37,7 +37,7 @@ async function loadYear(slug: string) {
   const { data: paintingRows } = await supabase
     .from("paintings")
     .select(
-      "id, year_id, title, year, medium, image_url, cover_image_url, tech_sheet_url, sort_order"
+      "id, year_id, title, year, medium, image_url, cover_image_url, tech_sheet_text, sort_order"
     )
     .eq("year_id", yearGroup.id)
     .order("sort_order", { ascending: true });
@@ -90,7 +90,7 @@ async function loadYear(slug: string) {
       medium: p.medium,
       images: imgs,
       notes: notesByPainting[p.id] ?? [],
-      techSheetUrl: p.tech_sheet_url,
+      techSheetText: p.tech_sheet_text,
     };
   });
 

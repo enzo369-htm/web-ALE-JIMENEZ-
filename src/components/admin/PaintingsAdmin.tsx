@@ -8,6 +8,8 @@ import type { PaintingYear } from "@/lib/types";
 
 function slugify(input: string) {
   return input
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .trim()
     .replace(/[^a-z0-9]+/g, "-")
@@ -42,7 +44,7 @@ export default function PaintingsAdmin({
     const { data: page, error: pageError } = await supabase
       .from("canvas_pages")
       .insert({
-        slug: `paintings-${slug}`,
+        slug: `paintings-${slug}-${Date.now().toString(36).slice(-6)}`,
         title: `${title.trim()} canvas`,
         height_ratio: 1.15,
       })
@@ -73,11 +75,14 @@ export default function PaintingsAdmin({
       )
       .single();
 
-    setBusy(false);
     if (error) {
+      await supabase.from("canvas_pages").delete().eq("id", page.id);
+      setBusy(false);
       setMessage(error.message);
       return;
     }
+
+    setBusy(false);
     setYears((prev) => [...prev, data as PaintingYear]);
     setTitle("");
     setMessage("Created.");
@@ -96,7 +101,15 @@ export default function PaintingsAdmin({
       return;
     }
     if (year?.canvas_page_id) {
-      await supabase.from("canvas_pages").delete().eq("id", year.canvas_page_id);
+      const { error: pageError } = await supabase
+        .from("canvas_pages")
+        .delete()
+        .eq("id", year.canvas_page_id);
+      if (pageError) {
+        setMessage(
+          `Year deleted, but canvas cleanup failed: ${pageError.message}`
+        );
+      }
     }
     setYears((prev) => prev.filter((y) => y.id !== id));
     router.refresh();
