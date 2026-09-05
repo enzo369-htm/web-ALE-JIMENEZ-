@@ -48,7 +48,7 @@ function HeroChrome() {
             <li key={item.href}>
               <Link
                 href={item.href}
-                className="text-ink mix-blend-multiply transition-colors hover:text-accent"
+                className="text-ink mix-blend-multiply transition-opacity hover:opacity-60"
               >
                 <span className="text-muted">[</span>
                 {" "}

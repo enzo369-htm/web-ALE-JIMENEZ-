@@ -5,7 +5,12 @@ import SiteHeader from "@/components/SiteHeader";
 import ProjectModeA from "@/components/ProjectModeA";
 import { createClient } from "@/core/supabase/server";
 import type { LightboxNote, LightboxWork } from "@/components/WorkLightbox";
-import type { Project, Work, WorkImage, WorkNote } from "@/lib/types";
+import type {
+  Painting,
+  PaintingImage,
+  PaintingNote,
+  PaintingYear,
+} from "@/lib/types";
 
 type Params = { slug: string };
 
@@ -18,69 +23,73 @@ export async function generateMetadata({
   return { title: slug };
 }
 
-async function loadProject(slug: string) {
+async function loadYear(slug: string) {
   const supabase = await createClient();
 
-  const { data: project } = await supabase
-    .from("projects")
-    .select(
-      "id, slug, title, year, location, description, display_mode, sort_order, canvas_page_id"
-    )
+  const { data: yearGroup } = await supabase
+    .from("painting_years")
+    .select("id, title, slug, year, description, sort_order, canvas_page_id")
     .eq("slug", slug)
     .maybeSingle();
 
-  if (!project) return null;
+  if (!yearGroup) return null;
 
-  const { data: works } = await supabase
-    .from("works")
-    .select("id, project_id, title, year, medium, cover_image_url, sort_order")
-    .eq("project_id", project.id)
+  const { data: paintingRows } = await supabase
+    .from("paintings")
+    .select(
+      "id, year_id, title, year, medium, image_url, cover_image_url, sort_order"
+    )
+    .eq("year_id", yearGroup.id)
     .order("sort_order", { ascending: true });
 
-  const workRows = (works as Work[]) ?? [];
-  const workIds = workRows.map((w) => w.id);
+  const rows = (paintingRows as Painting[]) ?? [];
+  const paintingIds = rows.map((p) => p.id);
 
-  let images: WorkImage[] = [];
-  let notes: WorkNote[] = [];
-  if (workIds.length) {
+  let images: PaintingImage[] = [];
+  let notes: PaintingNote[] = [];
+  if (paintingIds.length) {
     const { data } = await supabase
-      .from("work_images")
-      .select("id, work_id, image_url, sort_order")
-      .in("work_id", workIds)
+      .from("painting_images")
+      .select("id, painting_id, image_url, sort_order")
+      .in("painting_id", paintingIds)
       .order("sort_order", { ascending: true });
-    images = (data as WorkImage[]) ?? [];
+    images = (data as PaintingImage[]) ?? [];
 
     const { data: noteRows } = await supabase
-      .from("work_notes")
-      .select("id, work_id, image_url, x, y, width, sort_order")
-      .in("work_id", workIds)
+      .from("painting_notes")
+      .select("id, painting_id, image_url, x, y, width, sort_order")
+      .in("painting_id", paintingIds)
       .order("sort_order", { ascending: true });
-    notes = (noteRows as WorkNote[]) ?? [];
+    notes = (noteRows as PaintingNote[]) ?? [];
   }
 
-  const notesByWork = notes.reduce<Record<string, LightboxNote[]>>((acc, n) => {
-    (acc[n.work_id] ??= []).push({
-      id: n.id,
-      imageUrl: n.image_url,
-      x: n.x,
-      y: n.y,
-      width: n.width,
-    });
-    return acc;
-  }, {});
+  const notesByPainting = notes.reduce<Record<string, LightboxNote[]>>(
+    (acc, n) => {
+      (acc[n.painting_id] ??= []).push({
+        id: n.id,
+        imageUrl: n.image_url,
+        x: n.x,
+        y: n.y,
+        width: n.width,
+      });
+      return acc;
+    },
+    {}
+  );
 
-  const worksForLightbox: LightboxWork[] = workRows.map((w) => {
+  const worksForLightbox: LightboxWork[] = rows.map((p) => {
     const imgs = images
-      .filter((img) => img.work_id === w.id)
+      .filter((img) => img.painting_id === p.id)
       .map((img) => img.image_url);
-    if (imgs.length === 0 && w.cover_image_url) imgs.push(w.cover_image_url);
+    if (imgs.length === 0 && p.cover_image_url) imgs.push(p.cover_image_url);
+    if (imgs.length === 0 && p.image_url) imgs.push(p.image_url);
     return {
-      id: w.id,
-      title: w.title,
-      year: w.year,
-      medium: w.medium,
+      id: p.id,
+      title: p.title,
+      year: p.year,
+      medium: p.medium,
       images: imgs,
-      notes: notesByWork[w.id] ?? [],
+      notes: notesByPainting[p.id] ?? [],
     };
   });
 
@@ -99,87 +108,90 @@ async function loadProject(slug: string) {
   }[] = [];
   let heightRatio = 1.15;
 
-  if (project.canvas_page_id) {
+  if (yearGroup.canvas_page_id) {
     const { data: page } = await supabase
       .from("canvas_pages")
       .select("id, height_ratio")
-      .eq("id", project.canvas_page_id)
+      .eq("id", yearGroup.canvas_page_id)
       .maybeSingle();
 
     heightRatio = page?.height_ratio ?? 1.15;
 
-    const { data: rows } = await supabase
+    const { data: canvasRows } = await supabase
       .from("canvas_items")
-      .select("id, image_url, label, x, y, width, work_id")
-      .eq("page_id", project.canvas_page_id)
+      .select("id, image_url, label, x, y, width, painting_id")
+      .eq("page_id", yearGroup.canvas_page_id)
       .order("sort_order", { ascending: true });
 
-    canvasItems = (rows ?? []).map((r) => ({
+    canvasItems = (canvasRows ?? []).map((r) => ({
       id: r.id,
       imageUrl: r.image_url,
       x: r.x,
       y: r.y,
       width: r.width,
       label: r.label ?? undefined,
-      workId: r.work_id,
-      meta: r.work_id ? { workId: r.work_id } : undefined,
+      workId: r.painting_id,
+      meta: r.painting_id ? { workId: r.painting_id } : undefined,
     }));
   }
 
   return {
-    project: project as Project,
+    yearGroup: yearGroup as PaintingYear,
+    worksForLightbox,
     worksById,
     canvasItems,
     heightRatio,
   };
 }
 
-export default async function ProjectDetailPage({
+export default async function PaintingYearPage({
   params,
 }: {
   params: Promise<Params>;
 }) {
   const { slug } = await params;
 
-  let payload: Awaited<ReturnType<typeof loadProject>> = null;
+  let payload: Awaited<ReturnType<typeof loadYear>> = null;
   try {
-    payload = await loadProject(slug);
+    payload = await loadYear(slug);
   } catch {
     payload = null;
   }
 
   if (!payload) notFound();
 
-  const { project, worksById, canvasItems, heightRatio } = payload;
+  const { yearGroup, worksById, canvasItems, heightRatio } = payload;
 
   return (
     <main className="min-h-screen pb-24">
-      <SiteHeader activeHref="/projects" />
+      <SiteHeader activeHref="/paintings" />
       <div className="site-container pt-4 md:pt-10">
         <div className="mb-10 flex flex-col items-start gap-4 md:items-center md:text-center">
           <p className="text-accent text-xl lowercase md:text-2xl">
-            {project.title}
-            {project.year ? `, ${project.year}` : ""}
+            {yearGroup.title}
+            {yearGroup.year && yearGroup.year !== yearGroup.title
+              ? `, ${yearGroup.year}`
+              : ""}
           </p>
           <span className="text-accent text-sm" aria-hidden>
             ⊹
           </span>
-          {project.description && (
+          {yearGroup.description && (
             <p className="max-w-xl prose-site text-muted md:text-center">
-              {project.description}
+              {yearGroup.description}
             </p>
           )}
           <Link
-            href="/projects"
+            href="/paintings"
             className="font-mono-ui text-[11px] uppercase tracking-wide text-muted hover:text-ink"
           >
-            ← All projects
+            ← Selected paintings
           </Link>
         </div>
 
         {canvasItems.length === 0 && (
           <p className="text-center text-sm text-muted">
-            No works on the canvas yet. Add and position images in admin.
+            No paintings on the canvas yet. Add and position images in admin.
           </p>
         )}
       </div>

@@ -1,6 +1,11 @@
 -- Texts published on the site (title, short excerpt, full body).
+-- Replaces any previous Substack-oriented texts table.
 
-create table if not exists texts (
+drop policy if exists "Public read texts" on texts;
+drop policy if exists "Auth write texts" on texts;
+drop table if exists texts;
+
+create table texts (
   id uuid primary key default gen_random_uuid(),
   title text not null,
   slug text not null unique,
@@ -11,15 +16,13 @@ create table if not exists texts (
   created_at timestamptz not null default now()
 );
 
-create index if not exists texts_sort_order_idx on texts (sort_order);
+create index texts_sort_order_idx on texts (sort_order);
 
 alter table texts enable row level security;
 
-drop policy if exists "Public read texts" on texts;
 create policy "Public read texts"
   on texts for select using (true);
 
-drop policy if exists "Auth write texts" on texts;
 create policy "Auth write texts"
   on texts for all to authenticated
   using (true) with check (true);

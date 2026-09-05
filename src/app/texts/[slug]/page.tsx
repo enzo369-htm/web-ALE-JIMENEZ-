@@ -59,7 +59,9 @@ export default async function TextDetailPage({
         >
           ← Texts
         </Link>
-        <h1 className="text-3xl leading-snug md:text-4xl">{text.title}</h1>
+        <h1 className="text-3xl leading-snug text-accent md:text-4xl">
+          {text.title}
+        </h1>
         {text.published_at && (
           <p className="mt-3 font-mono-ui text-[11px] uppercase tracking-wide text-muted">
             {text.published_at}

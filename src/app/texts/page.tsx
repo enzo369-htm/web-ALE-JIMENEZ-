@@ -26,10 +26,7 @@ export default async function TextsPage() {
     <main className="min-h-screen pb-24">
       <SiteHeader activeHref="/texts" />
       <div className="site-container pt-6 md:pt-14">
-        <h1 className="mb-4 text-accent lowercase text-xl">texts</h1>
-        <p className="mb-12 max-w-lg prose-site text-muted">
-          Selected writings published here on the site.
-        </p>
+        <h1 className="mb-12 text-accent text-[1.375rem]">Texts</h1>
 
         <ul className="max-w-2xl space-y-14">
           {texts.length === 0 && (
@@ -38,7 +35,7 @@ export default async function TextsPage() {
           {texts.map((t) => (
             <li key={t.id} className="space-y-4">
               <div>
-                <h2 className="text-2xl leading-snug">{t.title}</h2>
+                <h2 className="text-2xl leading-snug text-accent">{t.title}</h2>
                 {t.published_at && (
                   <p className="mt-1 font-mono-ui text-[11px] uppercase tracking-wide text-muted">
                     {t.published_at}

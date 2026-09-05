@@ -30,7 +30,7 @@ export default async function ProjectsPage() {
       <SiteHeader activeHref="/projects" />
       <div className="site-container pt-6 md:pt-16">
         <div>
-          <h1 className="mb-10 text-accent lowercase text-xl">projects</h1>
+          <h1 className="mb-10 text-accent text-[1.375rem]">Projects</h1>
           <ol className="space-y-4 text-lg md:text-xl leading-snug">
             {projects.length === 0 && (
               <li className="text-muted text-base">

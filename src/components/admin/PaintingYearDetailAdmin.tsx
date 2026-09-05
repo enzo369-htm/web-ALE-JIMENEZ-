@@ -13,9 +13,16 @@ import ImageUploadField from "@/components/admin/ImageUploadField";
 import NotesEditorModal, {
   type NoteRecord,
 } from "@/components/admin/NotesEditorModal";
-import type { Project, Work, WorkImage, WorkNote } from "@/lib/types";
+import type {
+  Painting,
+  PaintingImage,
+  PaintingNote,
+  PaintingYear,
+} from "@/lib/types";
 
 const BUCKET = process.env.NEXT_PUBLIC_UPLOAD_BUCKET || "uploads";
+
+type PaintingWithImages = Painting & { images: PaintingImage[] };
 
 type CanvasRow = {
   id: string;
@@ -24,12 +31,12 @@ type CanvasRow = {
   x: number;
   y: number;
   width: number;
-  work_id: string | null;
+  painting_id: string | null;
 };
 
-type WorkWithImages = Work & { images: WorkImage[] };
-
-function rowsToItems(rows: CanvasRow[]): (CanvasItem & { workId?: string | null })[] {
+function rowsToItems(
+  rows: CanvasRow[]
+): (CanvasItem & { paintingId?: string | null })[] {
   return rows.map((r) => ({
     id: r.id,
     imageUrl: r.image_url,
@@ -37,46 +44,32 @@ function rowsToItems(rows: CanvasRow[]): (CanvasItem & { workId?: string | null 
     y: r.y,
     width: r.width,
     label: r.label ?? undefined,
-    workId: r.work_id,
-    meta: r.work_id ? { workId: r.work_id } : undefined,
+    paintingId: r.painting_id,
+    meta: r.painting_id ? { workId: r.painting_id } : undefined,
   }));
 }
 
-function notesForWork(
-  notesByWorkId: Record<string, WorkNote[]>,
-  workId: string
-): NoteRecord[] {
-  return (notesByWorkId[workId] ?? []).map((n) => ({
-    id: n.id,
-    image_url: n.image_url,
-    x: n.x,
-    y: n.y,
-    width: n.width,
-    sort_order: n.sort_order,
-  }));
-}
-
-export default function ProjectDetailAdmin({
-  project: initialProject,
-  works: initialWorks,
+export default function PaintingYearDetailAdmin({
+  yearGroup: initialYear,
+  paintings: initialPaintings,
   canvasPage,
   canvasItems: initialCanvas,
-  workNotes: initialWorkNotes,
+  paintingNotes: initialPaintingNotes,
 }: {
-  project: Project;
-  works: WorkWithImages[];
+  yearGroup: PaintingYear;
+  paintings: PaintingWithImages[];
   canvasPage: { id: string; height_ratio: number } | null;
   canvasItems: CanvasRow[];
-  workNotes: WorkNote[];
+  paintingNotes: PaintingNote[];
 }) {
-  const [project, setProject] = useState(initialProject);
-  const [works, setWorks] = useState(initialWorks);
-  const [notesByWorkId, setNotesByWorkId] = useState<
-    Record<string, WorkNote[]>
+  const [yearGroup, setYearGroup] = useState(initialYear);
+  const [paintings, setPaintings] = useState(initialPaintings);
+  const [notesByPaintingId, setNotesByPaintingId] = useState<
+    Record<string, PaintingNote[]>
   >(() => {
-    const map: Record<string, WorkNote[]> = {};
-    for (const n of initialWorkNotes) {
-      (map[n.work_id] ??= []).push(n);
+    const map: Record<string, PaintingNote[]> = {};
+    for (const n of initialPaintingNotes) {
+      (map[n.painting_id] ??= []).push(n);
     }
     return map;
   });
@@ -87,14 +80,14 @@ export default function ProjectDetailAdmin({
     setSavingMeta(true);
     setMessage("");
     const supabase = createClient();
-    let canvasPageId = project.canvas_page_id;
+    let canvasPageId = yearGroup.canvas_page_id;
 
     if (!canvasPageId) {
       const { data: page, error } = await supabase
         .from("canvas_pages")
         .insert({
-          slug: project.slug,
-          title: `${project.title} canvas`,
+          slug: `paintings-${yearGroup.slug}`,
+          title: `${yearGroup.title} canvas`,
           height_ratio: 1.15,
         })
         .select("id")
@@ -108,39 +101,38 @@ export default function ProjectDetailAdmin({
     }
 
     const { error } = await supabase
-      .from("projects")
+      .from("painting_years")
       .update({
-        title: project.title,
-        year: project.year,
-        location: project.location,
-        description: project.description,
-        display_mode: "a",
-        sort_order: project.sort_order,
+        title: yearGroup.title,
+        year: yearGroup.year,
+        description: yearGroup.description,
+        sort_order: yearGroup.sort_order,
         canvas_page_id: canvasPageId,
       })
-      .eq("id", project.id);
+      .eq("id", yearGroup.id);
 
     setSavingMeta(false);
     if (error) {
       setMessage(error.message);
       return;
     }
-    setProject((p) => ({
-      ...p,
-      display_mode: "a",
-      canvas_page_id: canvasPageId,
-    }));
-    setMessage("Project saved.");
+    setYearGroup((y) => ({ ...y, canvas_page_id: canvasPageId }));
+    setMessage("Saved.");
   }
+
+  const pageId = canvasPage?.id || yearGroup.canvas_page_id;
 
   return (
     <div className="space-y-10">
       <div>
-        <Link href="/admin/projects" className="text-sm text-gray-500 hover:text-black">
-          ← Projects
+        <Link
+          href="/admin/paintings"
+          className="text-sm text-gray-500 hover:text-black"
+        >
+          ← Selected paintings
         </Link>
-        <h1 className="mt-2 text-2xl font-medium">{project.title}</h1>
-        <p className="text-sm text-gray-500">/{project.slug}</p>
+        <h1 className="mt-2 text-2xl font-medium">{yearGroup.title}</h1>
+        <p className="text-sm text-gray-500">/{yearGroup.slug}</p>
       </div>
 
       <section className="space-y-4 border border-gray-200 p-4">
@@ -150,25 +142,29 @@ export default function ProjectDetailAdmin({
             Title
             <input
               className="mt-1 w-full border border-gray-300 px-3 py-2"
-              value={project.title}
-              onChange={(e) => setProject({ ...project, title: e.target.value })}
+              value={yearGroup.title}
+              onChange={(e) =>
+                setYearGroup({ ...yearGroup, title: e.target.value })
+              }
             />
           </label>
           <label className="text-sm">
             Year
             <input
               className="mt-1 w-full border border-gray-300 px-3 py-2"
-              value={project.year ?? ""}
-              onChange={(e) => setProject({ ...project, year: e.target.value })}
+              value={yearGroup.year ?? ""}
+              onChange={(e) =>
+                setYearGroup({ ...yearGroup, year: e.target.value })
+              }
             />
           </label>
-          <label className="text-sm">
-            Location
-            <input
-              className="mt-1 w-full border border-gray-300 px-3 py-2"
-              value={project.location ?? ""}
+          <label className="text-sm sm:col-span-2">
+            Description
+            <textarea
+              className="mt-1 min-h-20 w-full border border-gray-300 px-3 py-2"
+              value={yearGroup.description ?? ""}
               onChange={(e) =>
-                setProject({ ...project, location: e.target.value })
+                setYearGroup({ ...yearGroup, description: e.target.value })
               }
             />
           </label>
@@ -177,30 +173,20 @@ export default function ProjectDetailAdmin({
             <input
               type="number"
               className="mt-1 w-full border border-gray-300 px-3 py-2"
-              value={project.sort_order}
+              value={yearGroup.sort_order}
               onChange={(e) =>
-                setProject({
-                  ...project,
+                setYearGroup({
+                  ...yearGroup,
                   sort_order: Number(e.target.value) || 0,
                 })
-              }
-            />
-          </label>
-          <label className="text-sm sm:col-span-2">
-            Description
-            <textarea
-              className="mt-1 min-h-24 w-full border border-gray-300 px-3 py-2"
-              value={project.description ?? ""}
-              onChange={(e) =>
-                setProject({ ...project, description: e.target.value })
               }
             />
           </label>
         </div>
         <button
           type="button"
-          onClick={() => void saveMeta()}
           disabled={savingMeta}
+          onClick={() => void saveMeta()}
           className="bg-black px-4 py-2 text-sm text-white disabled:opacity-50"
         >
           {savingMeta ? "Saving…" : "Save details"}
@@ -208,275 +194,301 @@ export default function ProjectDetailAdmin({
         {message && <p className="text-sm text-gray-600">{message}</p>}
       </section>
 
-      <WorksSection
-        projectId={project.id}
-        works={works}
-        onChange={setWorks}
-        notesByWorkId={notesByWorkId}
-        onNotesSaved={(workId, notes) => {
-          setNotesByWorkId((prev) => ({
+      <PaintingsSection
+        yearId={yearGroup.id}
+        paintings={paintings}
+        onChange={setPaintings}
+        notesByPaintingId={notesByPaintingId}
+        onNotesSaved={(paintingId, notes) => {
+          setNotesByPaintingId((prev) => ({
             ...prev,
-            [workId]: notes.map((n) => ({ ...n, work_id: workId })),
+            [paintingId]: notes.map((n) => ({
+              ...n,
+              painting_id: paintingId,
+            })),
           }));
         }}
       />
 
-      {(canvasPage || project.canvas_page_id) && (
-        <ProjectCanvasSection
-          pageId={(canvasPage?.id || project.canvas_page_id)!}
+      {(pageId || canvasPage?.id) && (
+        <PaintingCanvasSection
+          pageId={(pageId || canvasPage?.id)!}
           heightRatio={canvasPage?.height_ratio ?? 1.15}
           initialItems={initialCanvas}
-          works={works}
+          paintings={paintings}
         />
+      )}
+
+      {!pageId && !canvasPage?.id && (
+        <section className="space-y-3 border border-amber-200 bg-amber-50 p-4 text-sm">
+          <p className="font-medium text-amber-900">Free canvas missing</p>
+          <p className="text-amber-800">
+            This year group has no canvas yet. Click{" "}
+            <strong>Save details</strong> above to create it, then reload the
+            page. Also confirm you ran{" "}
+            <code className="text-xs">supabase/015_painting_years_canvas.sql</code>
+            .
+          </p>
+        </section>
       )}
     </div>
   );
 }
 
-function WorksSection({
-  projectId,
-  works,
+function PaintingsSection({
+  yearId,
+  paintings,
   onChange,
-  notesByWorkId,
+  notesByPaintingId,
   onNotesSaved,
 }: {
-  projectId: string;
-  works: WorkWithImages[];
-  onChange: (works: WorkWithImages[]) => void;
-  notesByWorkId: Record<string, WorkNote[]>;
-  onNotesSaved: (workId: string, notes: NoteRecord[]) => void;
+  yearId: string;
+  paintings: PaintingWithImages[];
+  onChange: (paintings: PaintingWithImages[]) => void;
+  notesByPaintingId: Record<string, PaintingNote[]>;
+  onNotesSaved: (paintingId: string, notes: NoteRecord[]) => void;
 }) {
   const [title, setTitle] = useState("");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
-  const [notesWorkId, setNotesWorkId] = useState<string | null>(null);
+  const [notesPaintingId, setNotesPaintingId] = useState<string | null>(null);
 
-  const notesWork = works.find((w) => w.id === notesWorkId) ?? null;
+  const notesPainting =
+    paintings.find((p) => p.id === notesPaintingId) ?? null;
   const notesCenter =
-    notesWork?.cover_image_url || notesWork?.images[0]?.image_url || null;
+    notesPainting?.cover_image_url ||
+    notesPainting?.images[0]?.image_url ||
+    notesPainting?.image_url ||
+    null;
 
-  async function addWork() {
+  async function addPainting() {
     if (!title.trim()) return;
     setBusy(true);
     const supabase = createClient();
     const sortOrder =
-      works.reduce((max, w) => Math.max(max, w.sort_order), 0) + 1;
+      paintings.reduce((max, p) => Math.max(max, p.sort_order), 0) + 1;
     const { data, error } = await supabase
-      .from("works")
+      .from("paintings")
       .insert({
-        project_id: projectId,
+        year_id: yearId,
         title: title.trim(),
         year: String(new Date().getFullYear()),
         medium: "oil on canvas",
         sort_order: sortOrder,
       })
-      .select("id, project_id, title, year, medium, cover_image_url, sort_order")
+      .select(
+        "id, year_id, title, year, medium, image_url, cover_image_url, sort_order"
+      )
       .single();
     setBusy(false);
     if (error) {
       setMsg(error.message);
       return;
     }
-    onChange([...works, { ...(data as Work), images: [] }]);
+    onChange([...paintings, { ...(data as Painting), images: [] }]);
     setTitle("");
-    setMsg("Work added.");
+    setMsg("Painting added.");
   }
 
-  async function updateWork(work: WorkWithImages, patch: Partial<Work>) {
+  async function updatePainting(
+    painting: PaintingWithImages,
+    patch: Partial<Painting>
+  ) {
     const supabase = createClient();
-    const next = { ...work, ...patch };
+    const next = { ...painting, ...patch };
     const { error } = await supabase
-      .from("works")
+      .from("paintings")
       .update({
         title: next.title,
         year: next.year,
         medium: next.medium,
         cover_image_url: next.cover_image_url,
+        image_url: next.image_url ?? next.cover_image_url,
       })
-      .eq("id", work.id);
+      .eq("id", painting.id);
     if (error) {
       setMsg(error.message);
       return;
     }
-    onChange(works.map((w) => (w.id === work.id ? next : w)));
+    onChange(paintings.map((p) => (p.id === painting.id ? next : p)));
   }
 
-  async function addImage(work: WorkWithImages, url: string) {
+  async function addImage(painting: PaintingWithImages, url: string) {
     const supabase = createClient();
-    const sortOrder = work.images.length;
+    const sortOrder = painting.images.length;
     const { data, error } = await supabase
-      .from("work_images")
-      .insert({ work_id: work.id, image_url: url, sort_order: sortOrder })
-      .select("id, work_id, image_url, sort_order")
+      .from("painting_images")
+      .insert({
+        painting_id: painting.id,
+        image_url: url,
+        sort_order: sortOrder,
+      })
+      .select("id, painting_id, image_url, sort_order")
       .single();
     if (error) {
       setMsg(error.message);
       return;
     }
-    const images = [...work.images, data as WorkImage];
-    const cover = work.cover_image_url || url;
+    const images = [...painting.images, data as PaintingImage];
+    const cover = painting.cover_image_url || url;
     await supabase
-      .from("works")
-      .update({ cover_image_url: cover })
-      .eq("id", work.id);
+      .from("paintings")
+      .update({ cover_image_url: cover, image_url: cover })
+      .eq("id", painting.id);
     onChange(
-      works.map((w) =>
-        w.id === work.id ? { ...w, images, cover_image_url: cover } : w
+      paintings.map((p) =>
+        p.id === painting.id
+          ? { ...p, images, cover_image_url: cover, image_url: cover }
+          : p
       )
     );
   }
 
-  async function removeWork(id: string) {
-    if (!confirm("Delete this work and its images?")) return;
+  async function removePainting(id: string) {
+    if (!confirm("Delete this painting and its images?")) return;
     const supabase = createClient();
-    const { error } = await supabase.from("works").delete().eq("id", id);
+    const { error } = await supabase.from("paintings").delete().eq("id", id);
     if (error) {
       setMsg(error.message);
       return;
     }
-    onChange(works.filter((w) => w.id !== id));
+    onChange(paintings.filter((p) => p.id !== id));
   }
 
   return (
     <section className="space-y-4 border border-gray-200 p-4">
-      <h2 className="font-medium">Works</h2>
+      <h2 className="font-medium">Paintings</h2>
       <p className="text-sm text-gray-600">
-        Each work can have multiple photos (lightbox carousel). Use{" "}
-        <strong>Cargar notas</strong> to place studio notes around the first
-        image — they only show when the visitor opens that work full-screen.
+        Add a title, then photos. Place them on the free canvas below. Use{" "}
+        <strong>Cargar notas</strong> for studio notes around the first image
+        (lightbox only).
       </p>
       <div className="flex flex-wrap gap-2">
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Work title"
+          placeholder="Painting title"
           className="border border-gray-300 px-3 py-2 text-sm"
         />
         <button
           type="button"
           disabled={busy}
-          onClick={() => void addWork()}
+          onClick={() => void addPainting()}
           className="border border-gray-300 px-3 py-2 text-sm"
         >
-          Add work
+          Add painting
         </button>
       </div>
       {msg && <p className="text-sm text-gray-600">{msg}</p>}
       <ul className="space-y-6">
-        {works.map((work) => (
-          <li key={work.id} className="space-y-3 border-t border-gray-100 pt-4">
+        {paintings.map((painting) => (
+          <li key={painting.id} className="space-y-3 border border-gray-100 p-3">
             <div className="grid gap-2 sm:grid-cols-3">
               <input
                 className="border border-gray-300 px-3 py-2 text-sm"
-                value={work.title}
+                value={painting.title}
                 onChange={(e) =>
-                  onChange(
-                    works.map((w) =>
-                      w.id === work.id ? { ...w, title: e.target.value } : w
-                    )
-                  )
+                  void updatePainting(painting, { title: e.target.value })
                 }
-                onBlur={() => void updateWork(work, { title: work.title })}
               />
               <input
                 className="border border-gray-300 px-3 py-2 text-sm"
-                value={work.year ?? ""}
+                value={painting.year ?? ""}
+                onChange={(e) =>
+                  void updatePainting(painting, { year: e.target.value })
+                }
                 placeholder="Year"
-                onChange={(e) =>
-                  onChange(
-                    works.map((w) =>
-                      w.id === work.id ? { ...w, year: e.target.value } : w
-                    )
-                  )
-                }
-                onBlur={() => void updateWork(work, { year: work.year })}
               />
               <input
                 className="border border-gray-300 px-3 py-2 text-sm"
-                value={work.medium ?? ""}
-                placeholder="Medium"
+                value={painting.medium ?? ""}
                 onChange={(e) =>
-                  onChange(
-                    works.map((w) =>
-                      w.id === work.id ? { ...w, medium: e.target.value } : w
-                    )
-                  )
+                  void updatePainting(painting, { medium: e.target.value })
                 }
-                onBlur={() => void updateWork(work, { medium: work.medium })}
+                placeholder="Medium"
               />
             </div>
             <div className="flex flex-wrap gap-2">
-              {work.images.map((img) => (
+              {painting.images.map((img) => (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   key={img.id}
                   src={img.image_url}
                   alt=""
-                  className="h-20 w-auto border border-gray-200"
+                  className="h-20 w-auto border border-gray-200 object-contain"
                 />
               ))}
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <ImageUploadField
                 label="+ Photo"
-                prefix={`works/${work.id}`}
-                onUploaded={(url) => void addImage(work, url)}
+                prefix={`paintings/${painting.id}`}
+                onUploaded={(url) => void addImage(painting, url)}
               />
               <button
                 type="button"
-                onClick={() => setNotesWorkId(work.id)}
+                onClick={() => setNotesPaintingId(painting.id)}
                 className="border border-gray-300 px-3 py-2 text-sm"
               >
                 Cargar notas
-                {(notesByWorkId[work.id]?.length ?? 0) > 0
-                  ? ` (${notesByWorkId[work.id].length})`
+                {(notesByPaintingId[painting.id]?.length ?? 0) > 0
+                  ? ` (${notesByPaintingId[painting.id].length})`
                   : ""}
               </button>
               <button
                 type="button"
-                onClick={() => void removeWork(work.id)}
+                onClick={() => void removePainting(painting.id)}
                 className="text-sm text-red-600"
               >
-                Delete work
+                Delete painting
               </button>
             </div>
           </li>
         ))}
       </ul>
 
-      {notesWork && (
+      {notesPainting && (
         <NotesEditorModal
           open
-          onClose={() => setNotesWorkId(null)}
-          title={notesWork.title}
+          onClose={() => setNotesPaintingId(null)}
+          title={notesPainting.title}
           centerImageUrl={notesCenter}
-          uploadPrefix={`work-notes/${notesWork.id}`}
-          table="work_notes"
-          foreignKey="work_id"
-          entityId={notesWork.id}
-          initialNotes={notesForWork(notesByWorkId, notesWork.id)}
-          onSaved={(notes) => onNotesSaved(notesWork.id, notes)}
+          uploadPrefix={`painting-notes/${notesPainting.id}`}
+          table="painting_notes"
+          foreignKey="painting_id"
+          entityId={notesPainting.id}
+          initialNotes={(notesByPaintingId[notesPainting.id] ?? []).map(
+            (n) => ({
+              id: n.id,
+              image_url: n.image_url,
+              x: n.x,
+              y: n.y,
+              width: n.width,
+              sort_order: n.sort_order,
+            })
+          )}
+          onSaved={(notes) => onNotesSaved(notesPainting.id, notes)}
         />
       )}
     </section>
   );
 }
 
-function ProjectCanvasSection({
+function PaintingCanvasSection({
   pageId,
   heightRatio: initialRatio,
   initialItems,
-  works,
+  paintings,
 }: {
   pageId: string;
   heightRatio: number;
   initialItems: CanvasRow[];
-  works: WorkWithImages[];
+  paintings: PaintingWithImages[];
 }) {
   const [items, setItems] = useState(() => rowsToItems(initialItems));
   const [heightRatio, setHeightRatio] = useState(initialRatio);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [linkWorkId, setLinkWorkId] = useState("");
+  const [linkPaintingId, setLinkPaintingId] = useState("");
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState("");
@@ -497,15 +509,19 @@ function ProjectCanvasSection({
       });
       const pos = defaultPositionForIndex(items.length);
       const tempId = `tmp-${Date.now()}`;
-      const work = works.find((w) => w.id === linkWorkId);
+      const painting = paintings.find((p) => p.id === linkPaintingId);
+      const url =
+        painting?.cover_image_url ||
+        painting?.images[0]?.image_url ||
+        publicUrl;
       setItems((prev) => [
         ...prev,
         {
           id: tempId,
-          imageUrl: work?.cover_image_url || publicUrl,
-          label: work?.title || file.name,
-          workId: linkWorkId || null,
-          meta: linkWorkId ? { workId: linkWorkId } : undefined,
+          imageUrl: url,
+          label: painting?.title || file.name,
+          paintingId: linkPaintingId || null,
+          meta: linkPaintingId ? { workId: linkPaintingId } : undefined,
           ...pos,
         },
       ]);
@@ -518,14 +534,12 @@ function ProjectCanvasSection({
     }
   }
 
-  function addWorkToCanvas(workId: string) {
-    const work = works.find((w) => w.id === workId);
-    if (!work?.cover_image_url && work?.images[0]) {
-      // use first image
-    }
-    const url = work?.cover_image_url || work?.images[0]?.image_url;
-    if (!work || !url) {
-      setMessage("Work needs at least one image first.");
+  function addPaintingToCanvas(paintingId: string) {
+    const painting = paintings.find((p) => p.id === paintingId);
+    const url =
+      painting?.cover_image_url || painting?.images[0]?.image_url;
+    if (!painting || !url) {
+      setMessage("Painting needs at least one image first.");
       return;
     }
     const pos = defaultPositionForIndex(items.length);
@@ -535,9 +549,9 @@ function ProjectCanvasSection({
       {
         id: tempId,
         imageUrl: url,
-        label: work.title,
-        workId: work.id,
-        meta: { workId: work.id },
+        label: painting.title,
+        paintingId: painting.id,
+        meta: { workId: painting.id },
         ...pos,
       },
     ]);
@@ -571,9 +585,9 @@ function ProjectCanvasSection({
     const nextItems: typeof items = [];
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
-      const workId =
+      const paintingId =
         (item.meta?.workId as string | undefined) ||
-        (item as { workId?: string | null }).workId ||
+        (item as { paintingId?: string | null }).paintingId ||
         null;
       const payload = {
         page_id: pageId,
@@ -583,7 +597,8 @@ function ProjectCanvasSection({
         y: item.y,
         width: item.width,
         sort_order: i,
-        work_id: workId,
+        painting_id: paintingId,
+        work_id: null,
       };
 
       if (item.id.startsWith("tmp-") || !knownIds.current.has(item.id)) {
@@ -620,7 +635,7 @@ function ProjectCanvasSection({
 
   return (
     <section className="space-y-4 border border-gray-200 p-4">
-      <h2 className="font-medium">Free canvas</h2>
+      <h2 className="font-medium">Free canvas (Design A)</h2>
       <div className="flex flex-wrap items-center gap-3">
         <button
           type="button"
@@ -640,13 +655,13 @@ function ProjectCanvasSection({
         </button>
         <select
           className="border border-gray-300 px-3 py-2 text-sm"
-          value={linkWorkId}
-          onChange={(e) => setLinkWorkId(e.target.value)}
+          value={linkPaintingId}
+          onChange={(e) => setLinkPaintingId(e.target.value)}
         >
-          <option value="">Link upload to work (optional)</option>
-          {works.map((w) => (
-            <option key={w.id} value={w.id}>
-              {w.title}
+          <option value="">Link upload to painting (optional)</option>
+          {paintings.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.title}
             </option>
           ))}
         </select>
@@ -654,14 +669,14 @@ function ProjectCanvasSection({
           className="border border-gray-300 px-3 py-2 text-sm"
           defaultValue=""
           onChange={(e) => {
-            if (e.target.value) addWorkToCanvas(e.target.value);
+            if (e.target.value) addPaintingToCanvas(e.target.value);
             e.target.value = "";
           }}
         >
-          <option value="">Place existing work…</option>
-          {works.map((w) => (
-            <option key={w.id} value={w.id}>
-              {w.title}
+          <option value="">Place existing painting…</option>
+          {paintings.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.title}
             </option>
           ))}
         </select>

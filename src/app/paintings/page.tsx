@@ -1,59 +1,62 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import { createClient } from "@/core/supabase/server";
-import { workCaption } from "@/lib/format";
-import type { Painting } from "@/lib/types";
+import { padIndex, projectMetaLine } from "@/lib/format";
+import type { PaintingYear } from "@/lib/types";
 
 export const metadata: Metadata = {
   title: "Paintings",
 };
 
 export default async function PaintingsPage() {
-  let paintings: Painting[] = [];
+  let years: PaintingYear[] = [];
 
   try {
     const supabase = await createClient();
     const { data } = await supabase
-      .from("paintings")
-      .select("id, title, year, medium, image_url, sort_order")
+      .from("painting_years")
+      .select("id, title, slug, year, description, sort_order, canvas_page_id")
       .order("sort_order", { ascending: true });
-    paintings = (data as Painting[]) ?? [];
+    years = (data as PaintingYear[]) ?? [];
   } catch {
-    paintings = [];
+    years = [];
   }
 
   return (
     <main className="min-h-screen pb-24">
       <SiteHeader activeHref="/paintings" />
-      <div className="site-container pt-6 md:pt-14">
-        <h1 className="mb-12 text-accent lowercase text-xl">selected paintings</h1>
-
-        {paintings.length === 0 ? (
-          <p className="text-muted prose-site max-w-md">
-            Selected paintings will appear in a simple gallery once added in
-            admin.
-          </p>
-        ) : (
-          <ul className="grid gap-12 sm:grid-cols-2 lg:grid-cols-3">
-            {paintings.map((p) => (
-              <li key={p.id} className="space-y-3">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={p.image_url}
-                  alt={p.title}
-                  className="w-full h-auto object-contain"
-                />
-                <p className="text-sm text-muted text-center">
-                  {workCaption({
-                    title: `"${p.title}"`,
-                    year: p.year,
-                    medium: p.medium,
-                  })}
-                </p>
+      <div className="site-container pt-6 md:pt-16">
+        <div>
+          <h1 className="mb-10 text-accent text-[1.375rem]">
+            Selected paintings
+          </h1>
+          <ol className="space-y-4 text-lg leading-snug md:text-xl">
+            {years.length === 0 && (
+              <li className="text-base text-muted">
+                Year groups will appear here once added in admin.
+              </li>
+            )}
+            {years.map((yearGroup, i) => (
+              <li key={yearGroup.id}>
+                <Link
+                  href={`/paintings/${yearGroup.slug}`}
+                  className="group transition-colors hover:text-accent"
+                >
+                  <span className="font-mono-ui mr-2 text-xs text-muted">
+                    {padIndex(i + 1)}.
+                  </span>
+                  <span className="lowercase">
+                    {projectMetaLine({
+                      title: yearGroup.title,
+                      year: yearGroup.year,
+                    })}
+                  </span>
+                </Link>
               </li>
             ))}
-          </ul>
-        )}
+          </ol>
+        </div>
       </div>
     </main>
   );

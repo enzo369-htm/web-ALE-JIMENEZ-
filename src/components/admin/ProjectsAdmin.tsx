@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/core/supabase/client";
-import type { DisplayMode, Project } from "@/lib/types";
+import type { Project } from "@/lib/types";
 
 function slugify(input: string) {
   return input
@@ -22,7 +22,6 @@ export default function ProjectsAdmin({
   const router = useRouter();
   const [projects, setProjects] = useState(initialProjects);
   const [title, setTitle] = useState("");
-  const [mode, setMode] = useState<DisplayMode>("a");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -32,24 +31,20 @@ export default function ProjectsAdmin({
     setMessage("");
     const supabase = createClient();
     const slug = slugify(title) || `project-${Date.now()}`;
-    let canvasPageId: string | null = null;
 
-    if (mode === "a") {
-      const { data: page, error: pageError } = await supabase
-        .from("canvas_pages")
-        .insert({
-          slug,
-          title: `${title} canvas`,
-          height_ratio: 1.15,
-        })
-        .select("id")
-        .single();
-      if (pageError) {
-        setBusy(false);
-        setMessage(pageError.message);
-        return;
-      }
-      canvasPageId = page.id;
+    const { data: page, error: pageError } = await supabase
+      .from("canvas_pages")
+      .insert({
+        slug,
+        title: `${title} canvas`,
+        height_ratio: 1.15,
+      })
+      .select("id")
+      .single();
+    if (pageError) {
+      setBusy(false);
+      setMessage(pageError.message);
+      return;
     }
 
     const sortOrder =
@@ -60,9 +55,9 @@ export default function ProjectsAdmin({
       .insert({
         slug,
         title: title.trim(),
-        display_mode: mode,
+        display_mode: "a",
         sort_order: sortOrder,
-        canvas_page_id: canvasPageId,
+        canvas_page_id: page.id,
         year: String(new Date().getFullYear()),
         description: "Project description placeholder.",
       })
@@ -100,7 +95,8 @@ export default function ProjectsAdmin({
       <div>
         <h1 className="text-2xl font-medium">Projects</h1>
         <p className="mt-1 text-sm text-gray-600">
-          Mode A = free canvas. Mode B = centered work + handwritten notes.
+          Free canvas composition. Per-work notes open in the lightbox when a
+          visitor clicks a piece.
         </p>
       </div>
 
@@ -113,17 +109,6 @@ export default function ProjectsAdmin({
             className="mt-1 block w-56 border border-gray-300 px-3 py-2"
             placeholder="New project"
           />
-        </label>
-        <label className="text-sm">
-          Mode
-          <select
-            value={mode}
-            onChange={(e) => setMode(e.target.value as DisplayMode)}
-            className="mt-1 block border border-gray-300 px-3 py-2"
-          >
-            <option value="a">A — Free composition</option>
-            <option value="b">B — Studio wall</option>
-          </select>
         </label>
         <button
           type="button"
@@ -152,13 +137,16 @@ export default function ProjectsAdmin({
               >
                 {p.title}
               </Link>
-              <p className="text-xs text-gray-500 mt-1">
-                /{p.slug} · mode {p.display_mode.toUpperCase()}
+              <p className="mt-1 text-xs text-gray-500">
+                /{p.slug}
                 {p.year ? ` · ${p.year}` : ""}
               </p>
             </div>
             <div className="flex gap-3 text-sm">
-              <Link href={`/projects/${p.slug}`} className="text-gray-500 hover:text-black">
+              <Link
+                href={`/projects/${p.slug}`}
+                className="text-gray-500 hover:text-black"
+              >
                 View
               </Link>
               <button

@@ -14,7 +14,7 @@ const LINKS = [
   {
     href: "/admin/paintings",
     label: "Paintings",
-    blurb: "Selected paintings gallery",
+    blurb: "Year groups with free-canvas positioning (same as Projects Design A)",
   },
   {
     href: "/admin/texts",

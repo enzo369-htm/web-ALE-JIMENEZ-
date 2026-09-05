@@ -29,7 +29,7 @@ export default function SiteHeader({
             const active = activeHref === item.href;
             return (
               <li key={item.href}>
-                <Link href={item.href} className="hover:text-accent transition-colors">
+                <Link href={item.href} className="transition-opacity hover:opacity-60">
                   <span className="text-muted">[</span>
                   {active ? " • " : " "}
                   {item.label}

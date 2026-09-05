@@ -33,6 +33,16 @@ export type CanvasEditorProps = {
   onSelect?: (id: string | null) => void;
   /** Show height slider. Default true. */
   showHeightControl?: boolean;
+  /**
+   * Fill the parent instead of using paddingTop aspect-ratio.
+   * Parent must be `relative` with a defined size (e.g. lightbox stage).
+   */
+  fillContainer?: boolean;
+  /** Non-interactive centered image (lightbox / notes editor preview). */
+  overlayCenterUrl?: string | null;
+  overlayCenterLabel?: string | null;
+  /** Extra class on the center overlay image (must match public lightbox). */
+  overlayCenterImgClassName?: string;
   className?: string;
 };
 
@@ -48,6 +58,10 @@ export function CanvasEditor({
   selectedId = null,
   onSelect,
   showHeightControl = true,
+  fillContainer = false,
+  overlayCenterUrl = null,
+  overlayCenterLabel = null,
+  overlayCenterImgClassName = "mx-auto max-h-full w-auto object-contain opacity-90 shadow-sm",
   className = "",
 }: CanvasEditorProps) {
   const canvasRef = useRef<HTMLDivElement | null>(null);
@@ -114,6 +128,66 @@ export function CanvasEditor({
     interaction.current = null;
   }
 
+  const canvas = (
+    <div
+      ref={canvasRef}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
+      className={
+        fillContainer
+          ? "absolute inset-0 touch-none select-none overflow-hidden bg-bg"
+          : "relative w-full touch-none select-none overflow-hidden border border-gray-300 bg-white"
+      }
+      style={fillContainer ? undefined : { paddingTop: `${heightRatio * 100}%` }}
+    >
+      {overlayCenterUrl && (
+        <div className="pointer-events-none absolute inset-0 z-[5] flex items-center justify-center px-24">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={overlayCenterUrl}
+            alt={overlayCenterLabel || "Center preview"}
+            className={overlayCenterImgClassName}
+          />
+        </div>
+      )}
+      {items.map((item) => (
+        <div
+          key={item.id}
+          onPointerDown={(e) => onPointerDownItem(e, item)}
+          className="absolute cursor-move"
+          style={{
+            left: `${item.x}%`,
+            top: `${item.y}%`,
+            width: `${item.width}%`,
+            outline: selectedId === item.id ? "2px solid #1a1a1a" : "none",
+            outlineOffset: "2px",
+            zIndex: selectedId === item.id ? 20 : 10,
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={item.imageUrl}
+            alt={item.label || "Image"}
+            draggable={false}
+            className="pointer-events-none block h-auto w-full"
+          />
+          {selectedId === item.id && (
+            <div
+              onPointerDown={(e) => onPointerDownResize(e, item)}
+              className="absolute bottom-0 right-0 h-4 w-4 translate-x-1/2 translate-y-1/2 cursor-se-resize bg-black"
+              style={{ zIndex: 30 }}
+            />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+
+  if (fillContainer) {
+    return <div className={`absolute inset-0 ${className}`}>{canvas}</div>;
+  }
+
   return (
     <div className={`space-y-3 ${className}`}>
       {showHeightControl && onHeightRatioChange && (
@@ -139,45 +213,7 @@ export function CanvasEditor({
         Drag images to move. Pull the bottom-right corner to resize.
       </p>
 
-      <div
-        ref={canvasRef}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
-        className="relative w-full bg-white border border-gray-300 overflow-hidden touch-none select-none"
-        style={{ paddingTop: `${heightRatio * 100}%` }}
-      >
-        {items.map((item) => (
-          <div
-            key={item.id}
-            onPointerDown={(e) => onPointerDownItem(e, item)}
-            className="absolute cursor-move"
-            style={{
-              left: `${item.x}%`,
-              top: `${item.y}%`,
-              width: `${item.width}%`,
-              outline: selectedId === item.id ? "2px solid #1a1a1a" : "none",
-              outlineOffset: "2px",
-              zIndex: selectedId === item.id ? 20 : 10,
-            }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={item.imageUrl}
-              alt={item.label || "Image"}
-              draggable={false}
-              className="block w-full h-auto pointer-events-none"
-            />
-            {selectedId === item.id && (
-              <div
-                onPointerDown={(e) => onPointerDownResize(e, item)}
-                className="absolute bottom-0 right-0 w-4 h-4 bg-black cursor-se-resize translate-x-1/2 translate-y-1/2"
-                style={{ zIndex: 30 }}
-              />
-            )}
-          </div>
-        ))}
-      </div>
+      {canvas}
     </div>
   );
 }

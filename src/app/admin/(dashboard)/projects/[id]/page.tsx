@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/core/supabase/server";
 import ProjectDetailAdmin from "@/components/admin/ProjectDetailAdmin";
-import type { Project, ProjectNote, Work, WorkImage } from "@/lib/types";
+import type { Project, Work, WorkImage, WorkNote } from "@/lib/types";
 
 type Params = { id: string };
 
@@ -33,6 +33,7 @@ export default async function AdminProjectDetailPage({
   const workIds = workRows.map((w) => w.id);
 
   let images: WorkImage[] = [];
+  let workNotes: WorkNote[] = [];
   if (workIds.length) {
     const { data } = await supabase
       .from("work_images")
@@ -40,6 +41,13 @@ export default async function AdminProjectDetailPage({
       .in("work_id", workIds)
       .order("sort_order", { ascending: true });
     images = (data as WorkImage[]) ?? [];
+
+    const { data: notes } = await supabase
+      .from("work_notes")
+      .select("id, work_id, image_url, x, y, width, sort_order")
+      .in("work_id", workIds)
+      .order("sort_order", { ascending: true });
+    workNotes = (notes as WorkNote[]) ?? [];
   }
 
   const worksWithImages = workRows.map((w) => ({
@@ -75,19 +83,13 @@ export default async function AdminProjectDetailPage({
     }
   }
 
-  const { data: notes } = await supabase
-    .from("project_notes")
-    .select("id, project_id, image_url, x, y, width, sort_order")
-    .eq("project_id", id)
-    .order("sort_order", { ascending: true });
-
   return (
     <ProjectDetailAdmin
       project={project as Project}
       works={worksWithImages}
       canvasPage={canvasPage}
       canvasItems={canvasItems}
-      notes={(notes as ProjectNote[]) ?? []}
+      workNotes={workNotes}
     />
   );
 }

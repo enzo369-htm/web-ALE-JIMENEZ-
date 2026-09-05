@@ -37,12 +37,10 @@ export default async function AboutPage() {
       <div className="site-container pt-6 md:pt-10">
         <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:gap-16">
           <div className="space-y-10">
+            <h1 className="text-accent text-[1.375rem]">About</h1>
             <div>
-              <h1 className="text-3xl md:text-4xl leading-none tracking-tight">
+              <p className="text-3xl md:text-4xl leading-none tracking-tight">
                 Alejandra Jimenez
-              </h1>
-              <p className="mt-3 font-mono-ui text-xs uppercase tracking-wide text-muted">
-                Artist
               </p>
             </div>
 
