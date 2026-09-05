@@ -7,7 +7,6 @@ const links = [
   { href: "/admin/paintings", label: "Paintings" },
   { href: "/admin/texts", label: "Texts" },
   { href: "/admin/about", label: "About" },
-  { href: "/admin/canvas", label: "Canvas demo" },
 ];
 
 export default function DashboardLayout({
