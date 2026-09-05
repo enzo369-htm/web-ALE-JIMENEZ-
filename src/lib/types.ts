@@ -19,6 +19,7 @@ export type Work = {
   year: string | null;
   medium: string | null;
   cover_image_url: string | null;
+  tech_sheet_url: string | null;
   sort_order: number;
 };
 
@@ -78,6 +79,7 @@ export type Painting = {
   medium: string | null;
   image_url: string | null;
   cover_image_url: string | null;
+  tech_sheet_url: string | null;
   sort_order: number;
 };
 

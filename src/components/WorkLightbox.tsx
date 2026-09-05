@@ -23,6 +23,8 @@ export type LightboxWork = {
   medium?: string | null;
   images: string[];
   notes?: LightboxNote[];
+  /** Fixed under the painting in the lightbox only. */
+  techSheetUrl?: string | null;
 };
 
 export default function WorkLightbox({
@@ -46,6 +48,7 @@ export default function WorkLightbox({
     [work?.notes]
   );
   const hasNotes = notes.length > 0;
+  const techSheetUrl = work?.techSheetUrl ?? null;
 
   const go = useCallback(
     (dir: -1 | 1) => {
@@ -93,8 +96,8 @@ export default function WorkLightbox({
       </div>
 
       <div className={LIGHTBOX_STAGE_PAD}>
-        {/* Mobile: image + notes stacked */}
-        <div className="flex flex-1 flex-col items-center justify-center gap-8 overflow-hidden md:hidden">
+        {/* Mobile: image + ficha + notes stacked */}
+        <div className="flex flex-1 flex-col items-center justify-center gap-6 overflow-auto md:hidden">
           <div className="relative flex w-full items-center justify-center px-10">
             {showNav && (
               <button
@@ -110,7 +113,7 @@ export default function WorkLightbox({
             <img
               src={images[index]}
               alt={`${work.title} — ${index + 1} of ${total}`}
-              className="max-h-[55vh] max-w-full object-contain"
+              className="max-h-[45vh] max-w-full object-contain"
             />
             {showNav && (
               <button
@@ -123,8 +126,16 @@ export default function WorkLightbox({
               </button>
             )}
           </div>
+          {techSheetUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={techSheetUrl}
+              alt="Ficha técnica"
+              className="mx-auto max-h-[18vh] w-auto max-w-[70%] object-contain"
+            />
+          )}
           {hasNotes && (
-            <div className="grid w-full grid-cols-2 gap-4 overflow-auto px-2">
+            <div className="grid w-full grid-cols-2 gap-4 px-2 pb-4">
               {notes.map((note) => (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -138,7 +149,7 @@ export default function WorkLightbox({
           )}
         </div>
 
-        {/* Desktop: same coordinate space as admin NotesEditorModal */}
+        {/* Desktop */}
         <div className="relative hidden min-h-0 flex-1 overflow-hidden md:block">
           <div className="absolute inset-0">
             {notes.map((note) => (
@@ -161,7 +172,7 @@ export default function WorkLightbox({
             ))}
           </div>
 
-          <div className="absolute inset-0 z-10 flex items-center justify-center px-24">
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 px-24 pb-8">
             {showNav && (
               <button
                 type="button"
@@ -178,6 +189,14 @@ export default function WorkLightbox({
               alt={`${work.title} — ${index + 1} of ${total}`}
               className={LIGHTBOX_CENTER_IMG_CLASS}
             />
+            {techSheetUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={techSheetUrl}
+                alt="Ficha técnica"
+                className="max-h-[14vh] w-auto max-w-[28%] object-contain"
+              />
+            )}
             {showNav && (
               <button
                 type="button"

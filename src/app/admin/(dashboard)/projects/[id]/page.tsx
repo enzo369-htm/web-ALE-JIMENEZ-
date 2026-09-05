@@ -25,7 +25,9 @@ export default async function AdminProjectDetailPage({
 
   const { data: works } = await supabase
     .from("works")
-    .select("id, project_id, title, year, medium, cover_image_url, sort_order")
+    .select(
+      "id, project_id, title, year, medium, cover_image_url, tech_sheet_url, sort_order"
+    )
     .eq("project_id", id)
     .order("sort_order", { ascending: true });
 

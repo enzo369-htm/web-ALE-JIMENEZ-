@@ -13,6 +13,7 @@ import ImageUploadField from "@/components/admin/ImageUploadField";
 import NotesEditorModal, {
   type NoteRecord,
 } from "@/components/admin/NotesEditorModal";
+import TechSheetModal from "@/components/admin/TechSheetModal";
 import type { Project, Work, WorkImage, WorkNote } from "@/lib/types";
 
 const BUCKET = process.env.NEXT_PUBLIC_UPLOAD_BUCKET || "uploads";
@@ -250,10 +251,12 @@ function WorksSection({
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
   const [notesWorkId, setNotesWorkId] = useState<string | null>(null);
+  const [techWorkId, setTechWorkId] = useState<string | null>(null);
 
   const notesWork = works.find((w) => w.id === notesWorkId) ?? null;
   const notesCenter =
     notesWork?.cover_image_url || notesWork?.images[0]?.image_url || null;
+  const techWork = works.find((w) => w.id === techWorkId) ?? null;
 
   async function addWork() {
     if (!title.trim()) return;
@@ -270,7 +273,9 @@ function WorksSection({
         medium: "oil on canvas",
         sort_order: sortOrder,
       })
-      .select("id, project_id, title, year, medium, cover_image_url, sort_order")
+      .select(
+        "id, project_id, title, year, medium, cover_image_url, tech_sheet_url, sort_order"
+      )
       .single();
     setBusy(false);
     if (error) {
@@ -342,8 +347,9 @@ function WorksSection({
       <h2 className="font-medium">Works</h2>
       <p className="text-sm text-gray-600">
         Each work can have multiple photos (lightbox carousel). Use{" "}
-        <strong>Cargar notas</strong> to place studio notes around the first
-        image — they only show when the visitor opens that work full-screen.
+        <strong>Cargar notas</strong> for studio notes and{" "}
+        <strong>Cargar ficha técnica</strong> for the sheet under the painting —
+        both only show when the visitor opens that work full-screen.
       </p>
       <div className="flex flex-wrap gap-2">
         <input
@@ -434,6 +440,14 @@ function WorksSection({
               </button>
               <button
                 type="button"
+                onClick={() => setTechWorkId(work.id)}
+                className="border border-gray-300 px-3 py-2 text-sm"
+              >
+                Cargar ficha técnica
+                {work.tech_sheet_url ? " ✓" : ""}
+              </button>
+              <button
+                type="button"
                 onClick={() => void removeWork(work.id)}
                 className="text-sm text-red-600"
               >
@@ -456,6 +470,25 @@ function WorksSection({
           entityId={notesWork.id}
           initialNotes={notesForWork(notesByWorkId, notesWork.id)}
           onSaved={(notes) => onNotesSaved(notesWork.id, notes)}
+        />
+      )}
+
+      {techWork && (
+        <TechSheetModal
+          open
+          onClose={() => setTechWorkId(null)}
+          title={techWork.title}
+          table="works"
+          entityId={techWork.id}
+          initialUrl={techWork.tech_sheet_url}
+          uploadPrefix={`tech-sheets/${techWork.id}`}
+          onSaved={(url) => {
+            onChange(
+              works.map((w) =>
+                w.id === techWork.id ? { ...w, tech_sheet_url: url } : w
+              )
+            );
+          }}
         />
       )}
     </section>

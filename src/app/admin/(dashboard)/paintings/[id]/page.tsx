@@ -52,7 +52,7 @@ export default async function AdminPaintingYearPage({
   const { data: paintingRows } = await supabase
     .from("paintings")
     .select(
-      "id, year_id, title, year, medium, image_url, cover_image_url, sort_order"
+      "id, year_id, title, year, medium, image_url, cover_image_url, tech_sheet_url, sort_order"
     )
     .eq("year_id", id)
     .order("sort_order", { ascending: true });

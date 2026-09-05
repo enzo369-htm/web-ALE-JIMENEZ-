@@ -13,6 +13,7 @@ import ImageUploadField from "@/components/admin/ImageUploadField";
 import NotesEditorModal, {
   type NoteRecord,
 } from "@/components/admin/NotesEditorModal";
+import TechSheetModal from "@/components/admin/TechSheetModal";
 import type {
   Painting,
   PaintingImage,
@@ -252,6 +253,7 @@ function PaintingsSection({
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
   const [notesPaintingId, setNotesPaintingId] = useState<string | null>(null);
+  const [techPaintingId, setTechPaintingId] = useState<string | null>(null);
 
   const notesPainting =
     paintings.find((p) => p.id === notesPaintingId) ?? null;
@@ -260,6 +262,8 @@ function PaintingsSection({
     notesPainting?.images[0]?.image_url ||
     notesPainting?.image_url ||
     null;
+  const techPainting =
+    paintings.find((p) => p.id === techPaintingId) ?? null;
 
   async function addPainting() {
     if (!title.trim()) return;
@@ -277,7 +281,7 @@ function PaintingsSection({
         sort_order: sortOrder,
       })
       .select(
-        "id, year_id, title, year, medium, image_url, cover_image_url, sort_order"
+        "id, year_id, title, year, medium, image_url, cover_image_url, tech_sheet_url, sort_order"
       )
       .single();
     setBusy(false);
@@ -360,8 +364,8 @@ function PaintingsSection({
       <h2 className="font-medium">Paintings</h2>
       <p className="text-sm text-gray-600">
         Add a title, then photos. Place them on the free canvas below. Use{" "}
-        <strong>Cargar notas</strong> for studio notes around the first image
-        (lightbox only).
+        <strong>Cargar notas</strong> and{" "}
+        <strong>Cargar ficha técnica</strong> — both only show in the lightbox.
       </p>
       <div className="flex flex-wrap gap-2">
         <input
@@ -437,6 +441,14 @@ function PaintingsSection({
               </button>
               <button
                 type="button"
+                onClick={() => setTechPaintingId(painting.id)}
+                className="border border-gray-300 px-3 py-2 text-sm"
+              >
+                Cargar ficha técnica
+                {painting.tech_sheet_url ? " ✓" : ""}
+              </button>
+              <button
+                type="button"
                 onClick={() => void removePainting(painting.id)}
                 className="text-sm text-red-600"
               >
@@ -468,6 +480,25 @@ function PaintingsSection({
             })
           )}
           onSaved={(notes) => onNotesSaved(notesPainting.id, notes)}
+        />
+      )}
+
+      {techPainting && (
+        <TechSheetModal
+          open
+          onClose={() => setTechPaintingId(null)}
+          title={techPainting.title}
+          table="paintings"
+          entityId={techPainting.id}
+          initialUrl={techPainting.tech_sheet_url}
+          uploadPrefix={`tech-sheets/${techPainting.id}`}
+          onSaved={(url) => {
+            onChange(
+              paintings.map((p) =>
+                p.id === techPainting.id ? { ...p, tech_sheet_url: url } : p
+              )
+            );
+          }}
         />
       )}
     </section>
